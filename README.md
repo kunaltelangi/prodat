@@ -1,3 +1,3 @@
-# ProDat 
+# ProDat
 
-**ProDat** is an open source production model management tool for data scientists. Use `ProDat init` to turn any repository into a trackable experiment record. Sync using your own cloud.
+**ProDat** is an open source tool for managing machine learning models in production. It helps data scientists track experiments, organize workflows, and sync progress with their own cloud storage.
