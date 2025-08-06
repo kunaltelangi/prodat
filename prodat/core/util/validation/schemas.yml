@@ -1,0 +1,152 @@
+# http://docs.python-cerberus.org/en/stable/validation-rules.html
+
+create_project:
+  name:
+    empty: false
+    required: true
+    type: string
+  description:
+    nullable: true
+    type: string
+
+create_session:
+  name:
+    required: True
+    type: string
+  current:
+    type: boolean
+
+create_environment:
+  paths:
+    nullable: true
+    type: list
+  name:
+    nullable: true
+    type: string
+  description:
+    nullable: true
+    type: string
+
+create_snapshot:
+  code_id:
+    type: string
+  commit_id:
+    type: string
+
+  environment_id:
+    type: string
+  environment_paths:
+    type: list
+
+  file_collection_id:
+    type: string
+  paths:
+    type: list
+
+  config:
+    type: dict
+  config_filepath:
+    type: string
+  config_filename:
+    type: string
+
+  stats:
+    type: dict
+  stats_filepath:
+    type: string
+  stats_filename:
+    type: string
+
+  message:
+    type: string
+  session_id:
+    type: string
+  task_id:
+    type: string
+  label:
+    type: string
+  language:
+    type: string
+
+  visible:
+    type: boolean
+
+update_snapshot:
+  config:
+    nullable: true
+    type: dict
+  stats:
+    nullable: true
+    type: dict
+  message:
+    nullable: true
+    type: string
+  label:
+    nullable: true
+    type: string
+  visible:
+    nullable: true
+    type: boolean
+
+create_snapshot_from_task:
+  message:
+    type: string
+  task_id:
+    type: string
+  label:
+    nullable: true
+    type: string
+  config:
+    nullable: true
+    type: dict
+  stats:
+    nullable: true
+    type: dict
+
+create_task:
+  command:
+    nullable: true
+    type: string
+  command_list:
+    nullable: true
+    type: list
+  interactive:
+    type: boolean
+  detach:
+    type: boolean
+  gpu:
+    type: boolean
+  ports:
+    nullable: true
+    type: list
+  mem_limit:
+    nullable: true
+    type: string
+  workspace:
+    nullable: true
+    type: string
+  task_dirpath:
+    nullable: true
+    type: string
+  log_filepath:
+    nullable: true
+    type: string
+  data_file_path_map:
+    nullable: true
+    type: list
+  data_directory_path_map:
+    nullable: true
+    type: list
+
+update_task:
+  workspace:
+    nullable: true
+    type: string
+  command:
+    nullable: true
+    type: string
+  command_list:
+    nullable: true
+    type: list
+  interactive:
+    type: boolean
