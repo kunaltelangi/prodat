@@ -1,0 +1,111 @@
+{% extends "layouts/base_model.html" %}
+{% block subtitle %}Experiments{% endblock %}
+{% block modelbody %}
+<div class="section-tab-mobile">
+    <ul>
+        <a href="/{{ model.name }}">
+            <li>Summary</li>
+        </a>
+        <a href="/{{ model.name }}/experiments">
+            <li>Experiments</li>
+        </a>
+        <a href="/{{ model.name }}/snapshots">
+            <li>Snapshots</li>
+        </a>
+    </ul>
+</div>
+<div class="section-tab">
+    <div class="row">
+        <div class="col-xs-12">
+            <ul>
+                <a href="/{{ model.name }}" class="">
+                    <li>Summary</li>
+                </a>
+                <a href="/{{ model.name }}/experiments" class="active">
+                    <li>Experiments</li>
+                </a>
+                <a href="/{{ model.name }}/snapshots" class="">
+                    <li>Snapshots</li>
+                </a>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+
+            <div class="model-section-content-wrapper">
+
+                <div class="content-box multi-item">
+                    <div class="multi-item-content-wrap">
+
+                        <div class="multi-item-content-row snapshot-filters">
+                            <div class="input-group pull-right">
+                                <a href="/model/{{ model.name }}/experiments/.csv" target="_blank"><span class="btn blue"><i class="fa fa-download"></i></span></a>
+                            </div>
+                            <div class="">
+                                <p>
+                                   <div class="col-xs-12 col-sm-3 col-md-4 col-lg-3 nav-search">
+                                        <form method="get" action="/search">
+                                        <input type="text" name="q" placeholder="Search Datmo" required="" class="search">
+                                        <input type="hidden" name="type" placeholder="Search Datmo" required="" class="search">
+                                        </form>
+                                    </div>
+                                </p>
+                            </div>
+                        </div>
+
+
+                            <div class="multi-item-content-row overflow-scroll" >
+    <table class="sortable snapshot-grid" data-giturl="datmo/hello-world">
+        <thead>
+            <tr>
+                <th class="grid-header-sort"><span class="icon-arrow"></span><span>id</span></th>
+                <th class="grid-header-sort"><span class="icon-arrow"></span><span>command</span></th>
+                <th class="grid-header-sort"><span class="icon-arrow"></span><span>type</span></th>
+                <th class="grid-header-sort"><span class="icon-arrow"></span><span>status</span></th>
+                <th class="grid-header-sort"><span class="icon-arrow"></span><span>config</span></th>
+                <th class="grid-header-sort"><span class="icon-arrow"></span><span>start time</span></th>
+                <th class="grid-header-sort"><span class="icon-arrow"></span><span>before snapshot id</span></th>
+                <th class="grid-header-sort"><span class="icon-arrow"></span><span>end time</span></th>
+                <th class="grid-header-sort"><span class="icon-arrow"></span><span>duration(s)</span></th>
+                <th class="grid-header-sort"><span class="icon-arrow"></span><span>after snapshot id</span></th>
+                <th class="grid-header-sort"><span class="icon-arrow"></span><span>results</span></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for experiment in experiments %}
+        <tr data-id="{{ experiment.id }}"  class="snapshot-hover-menu">
+
+            <td><a href="#">{{ experiment.id }}</a></td>
+            <td>{{ experiment.command }}</td>
+            <td>{{ experiment.type }}</td>
+            <td>{{ experiment.status }}</td>
+            {% if experiment.config_printable %}
+            <td>{{ experiment.config_printable }}</td>
+            {% else %}
+            <td>None</td>
+            {% endif %}
+            <td>{{ experiment.start_time_prettified }}</td>
+            <td>{{ experiment.before_snapshot_id }}</td>
+            <td>{{ experiment.end_time_prettified }}</td>
+            <td>{{ experiment.duration }}</td>
+            <td>{{ experiment.after_snapshot_id }}</td>
+            {% if experiment.results_printable %}
+            <td>{{ experiment.results_printable }}</td>
+            {% else %}
+            <td>None</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <script src='{{ url_for("static", filename="./js/snapshot.js") }}'></script>
+</div>
+
+
+
+                    </div>
+                </div>
+            </div>
+{% endblock %}

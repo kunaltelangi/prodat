@@ -1,0 +1,57 @@
+version: 2.1
+jobs:
+  build-and-test-3.7:
+    docker:
+      - image: cimg/python:3.7
+    resource_class: medium
+    environment:
+      LOGGING_LEVEL: DEBUG
+      TEST_PACKAGE: python -m pytest -s -v
+
+    steps:
+      - checkout
+      - run: pip install --upgrade pip
+      - run: pip install pytest pytest-cov
+      - run: pip install -e .
+      - run: echo "Running Tests with Python 3.7"
+      - run: $TEST_PACKAGE
+
+  build-and-test-3.9:
+    docker:
+      - image: cimg/python:3.9
+    resource_class: medium
+    environment:
+      LOGGING_LEVEL: DEBUG
+      TEST_PACKAGE: python -m pytest -s -v
+
+    steps:
+      - checkout
+      - run: pip install --upgrade pip
+      - run: pip install pytest pytest-cov
+      - run: pip install -e .
+      - run: echo "Running Tests with Python 3.9"
+      - run: $TEST_PACKAGE
+
+  build-and-test-3.11:
+    docker:
+      - image: cimg/python:3.11
+    resource_class: medium
+    environment:
+      LOGGING_LEVEL: DEBUG
+      TEST_PACKAGE: python -m pytest -s -v
+
+    steps:
+      - checkout
+      - run: pip install --upgrade pip
+      - run: pip install pytest pytest-cov
+      - run: pip install -e .
+      - run: echo "Running Tests with Python 3.11"
+      - run: $TEST_PACKAGE
+
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+      - build-and-test-3.7
+      - build-and-test-3.9
+      - build-and-test-3.11

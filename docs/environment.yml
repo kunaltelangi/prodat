@@ -1,0 +1,10 @@
+name: datmo-docs
+channels:
+    - conda-forge
+dependencies:
+    - python=2.7
+    - sphinx=1.7.4
+    - pytest=3.0.4
+    - pip:
+        - sphinx-argparse==0.2.2
+        - autodocsumm
