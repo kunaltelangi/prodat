@@ -1,3 +1,3 @@
 import sys
-from datmo.cli.main import main
+from prodat.cli.main import main
 sys.exit(main())

@@ -1,15 +1,15 @@
 from blitzdb import Document, queryset
 from datetime import datetime
 
-from datmo.core.util.exceptions import (
+from prodat.core.util.exceptions import (
     EntityNotFound, EntityCollectionNotFound, IncorrectType,
     InvalidArgumentType, RequiredArgumentMissing, MoreThanOneEntityFound)
-from datmo.core.storage.driver import DALDriver
+from prodat.core.storage.driver import DALDriver
 
 class BlitzDBDALDriver(DALDriver):
     def __init__(self, driver_type, connection_string):
         super(BlitzDBDALDriver, self).__init__()
-        self.database_name = 'datmo_db'
+        self.database_name = 'prodat_db'
         self.driver_type = driver_type
         self.connection_string = connection_string
         if self.driver_type == "file":

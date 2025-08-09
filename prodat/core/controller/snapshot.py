@@ -1,14 +1,14 @@
 import os
 
-from datmo.core.controller.base import BaseController
-from datmo.core.controller.code.code import CodeController
-from datmo.core.controller.file.file_collection import FileCollectionController
-from datmo.core.controller.environment.environment import EnvironmentController
-from datmo.core.entity.snapshot import Snapshot
-from datmo.core.util.i18n import get as __
-from datmo.core.util.validation import validate
-from datmo.core.util.json_store import JSONStore
-from datmo.core.util.exceptions import (
+from prodat.core.controller.base import BaseController
+from prodat.core.controller.code.code import CodeController
+from prodat.core.controller.file.file_collection import FileCollectionController
+from prodat.core.controller.environment.environment import EnvironmentController
+from prodat.core.entity.snapshot import Snapshot
+from prodat.core.util.i18n import get as __
+from prodat.core.util.validation import validate
+from prodat.core.util.json_store import JSONStore
+from prodat.core.util.exceptions import (
     FileIOError, RequiredArgumentMissing, ProjectNotInitialized,
     EntityNotFound, TaskNotComplete, DoesNotExist, UnstagedChanges)
 
@@ -17,9 +17,9 @@ class SnapshotController(BaseController):
 
     Attributes
     ----------
-    code : datmo.core.controller.code.code.CodeController
-    file_collection : datmo.core.controller.file.file_collection.FileCollectionController
-    environment : datmo.core.controller.environment.environment.EnvironmentController
+    code : prodat.core.controller.code.code.CodeController
+    file_collection : prodat.core.controller.file.file_collection.FileCollectionController
+    environment : prodat.core.controller.environment.environment.EnvironmentController
 
     Methods
     -------
@@ -48,7 +48,7 @@ class SnapshotController(BaseController):
 
         Returns
         -------
-        datmo.core.entity.snapshot.Snapshot or None
+        prodat.core.entity.snapshot.Snapshot or None
             current snapshot object state if not unstaged and exists. if DNE return None (should never occur)
 
         Raises
@@ -163,7 +163,7 @@ class SnapshotController(BaseController):
 
         Returns
         -------
-        datmo.core.entity.snapshot.Snapshot
+        prodat.core.entity.snapshot.Snapshot
             snapshot object with all relevant parameters
 
         Raises
@@ -247,7 +247,7 @@ class SnapshotController(BaseController):
 
         Returns
         -------
-        datmo.core.entity.snapshot.Snapshot
+        prodat.core.entity.snapshot.Snapshot
             snapshot object with all relevant parameters
 
         Raises
@@ -401,7 +401,7 @@ class SnapshotController(BaseController):
 
         Returns
         -------
-        datmo.core.entity.snapshot.Snapshot
+        prodat.core.entity.snapshot.Snapshot
             core snapshot object
 
         Raises

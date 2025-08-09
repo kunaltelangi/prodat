@@ -34,22 +34,22 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.config import Config
-from datmo.cli.driver.helper import Helper
-from datmo.cli.command.project import ProjectCommand
-from datmo.cli.command.run import RunCommand
-from datmo.core.entity.run import Run
-from datmo.core.util.exceptions import DoesNotExist, \
+from prodat.config import Config
+from prodat.cli.driver.helper import Helper
+from prodat.cli.command.project import ProjectCommand
+from prodat.cli.command.run import RunCommand
+from prodat.core.entity.run import Run
+from prodat.core.util.exceptions import DoesNotExist, \
     MutuallyExclusiveArguments, RequiredArgumentMissing
-from datmo.core.util.misc_functions import pytest_docker_environment_failed_instantiation
+from prodat.core.util.misc_functions import pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestRunCommand():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         Config().set_home(self.temp_dir)
         self.cli_helper = Helper()
         self.snapshot_dict = {
@@ -100,7 +100,7 @@ class TestRunCommand():
         result = self.run_command.execute()
         assert not result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run(self):
         # TODO: Adding test with `--interactive` argument and terminate inside container
         self.__set_variables()
@@ -159,7 +159,7 @@ class TestRunCommand():
         # test when all is passed to stop all
         self.run_command.execute()
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run_data_dir(self):
         # TODO: Adding test with `--interactive` argument and terminate inside container
         self.__set_variables()
@@ -170,10 +170,10 @@ class TestRunCommand():
         test_mem_limit = "4g"
         # Test success for run with directory being passed
         test_data_dir_1 = os.path.join(
-            tempfile.mkdtemp(dir=test_datmo_dir), "data1")
+            tempfile.mkdtemp(dir=test_prodat_dir), "data1")
         os.mkdir(test_data_dir_1)
         test_data_dir_2 = os.path.join(
-            tempfile.mkdtemp(dir=test_datmo_dir), "data2")
+            tempfile.mkdtemp(dir=test_prodat_dir), "data2")
         os.mkdir(test_data_dir_2)
         with open(os.path.join(test_data_dir_1, "file.txt"), "wb") as f:
             f.write(to_bytes('my initial line in 1\n'))
@@ -232,7 +232,7 @@ class TestRunCommand():
 
         # test failure
         test_data_dir_dne = os.path.join(
-            tempfile.mkdtemp(dir=test_datmo_dir), "data_dne")
+            tempfile.mkdtemp(dir=test_prodat_dir), "data_dne")
         self.run_command.parse([
             "run", "--environment-paths", test_dockerfile, "--data",
             test_data_dir_dne
@@ -240,7 +240,7 @@ class TestRunCommand():
         result = self.run_command.execute()
         assert not result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run_string_command(self):
         # TODO: Adding test with `--interactive` argument and terminate inside container
         self.__set_variables()
@@ -324,7 +324,7 @@ class TestRunCommand():
     #         assert result.results == {"accuracy": "0.45"}
     #         assert result.status == "SUCCESS"
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run_notebook(self):
         self.__set_variables()
         # Update the default Dockerfile to test with
@@ -381,7 +381,7 @@ class TestRunCommand():
             exception_thrown = True
         assert exception_thrown
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run_ls(self):
         self.__set_variables()
 
@@ -479,7 +479,7 @@ class TestRunCommand():
             exception_thrown = True
         assert exception_thrown
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run_stop_success(self):
         # 1) Test stop with task_id
         # 2) Test stop with all
@@ -514,7 +514,7 @@ class TestRunCommand():
         run_stop_command = self.run_command.execute()
         assert run_stop_command == True
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run_stop_failure_required_args(self):
         self.__set_variables()
         # Passing wrong task id
@@ -526,7 +526,7 @@ class TestRunCommand():
             failed = True
         assert failed
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run_stop_failure_mutually_exclusive_vars(self):
         self.__set_variables()
         # Passing wrong task id
@@ -556,7 +556,7 @@ class TestRunCommand():
         result = self.run_command.execute()
         assert not result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run_delete_success(self):
         # 1) Test delete with run_id
         self.__set_variables()
@@ -592,7 +592,7 @@ class TestRunCommand():
         result = self.run_command.execute()
         assert not result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_rerun(self):
         self.__set_variables()
         # Test success case
@@ -625,7 +625,7 @@ class TestRunCommand():
         # test when all is passed to stop all
         self.run_command.execute()
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_rerun_invalid_arg(self):
         self.__set_variables()
         exception_thrown = False

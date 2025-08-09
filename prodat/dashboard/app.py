@@ -7,10 +7,10 @@ from flask import render_template, request, jsonify
 import plotly
 from datetime import datetime
 
-from datmo.config import Config
-from datmo.core.entity.run import Run
-from datmo.core.controller.base import BaseController
-from datmo.core.util.misc_functions import prettify_datetime, printable_object
+from prodat.config import Config
+from prodat.core.entity.run import Run
+from prodat.core.controller.base import BaseController
+from prodat.core.util.misc_functions import prettify_datetime, printable_object
 
 app = Flask(__name__)
 base_controller = BaseController()
@@ -21,7 +21,7 @@ user = {
     "username":
         "shabazp",
     "email":
-        "shabaz@datmo.com",
+        "shabaz@prodat.com",
     "gravatar_url":
         "https://www.gravatar.com/avatar/" + str(uuid.uuid1()) +
         "?s=220&d=identicon&r=PG"
@@ -128,7 +128,7 @@ def model_deployment_data(model_name, deployment_version_id, model_version_id):
         "start": int(start)
     }
     if count: filter["count"] = int(count)
-    new_data = datmo_monitoring.search_metadata(filter)
+    new_data = prodat_monitoring.search_metadata(filter)
 
     # update the number of new results
     num_new_results = len(new_data)
@@ -165,7 +165,7 @@ def model_deployment_data(model_name, deployment_version_id, model_version_id):
             "deployment_version_id": deployment_version_id,
             "model_version_id": model_version_id,
         }
-        cumulative_data = datmo_monitoring.search_metadata(filter)
+        cumulative_data = prodat_monitoring.search_metadata(filter)
         cumulative_feature_data = [
             datum[data_type][key_name] for datum in cumulative_data
             if datum[data_type] and key_name in datum[data_type].keys()
@@ -218,7 +218,7 @@ def model_deployment_detail(model_name, deployment_version_id,
         "deployment_version_id": deployment_version_id
     }
     input_keys, prediction_keys, feedback_keys = [], [], []
-    data = datmo_monitoring.search_metadata(filter)
+    data = prodat_monitoring.search_metadata(filter)
 
     if data:
         max_index = 0
@@ -233,13 +233,13 @@ def model_deployment_detail(model_name, deployment_version_id,
 
     # Determine the graph directory path and create if not present
     graph_dirpath = os.path.join(base_controller.home,
-                                 Config().datmo_directory_name, "deployments",
+                                 Config().prodat_directory_name, "deployments",
                                  deployment_version_id, model_version_id,
                                  "graphs")
     if not os.path.exists(graph_dirpath): os.makedirs(graph_dirpath)
 
     # Include deployment info
-    deployment_info = datmo_monitoring.get_deployment_info(
+    deployment_info = prodat_monitoring.get_deployment_info(
         deployment_version_id=deployment_version_id)
     # Prettify dates
     deployment_info['created_at'] = prettify_datetime(
@@ -274,7 +274,7 @@ def model_deployments(model_name):
 
     # get all data and extract unique model_version_id and deployment_version_id
     filter = {"model_id": model_name}
-    all_data = datmo_monitoring.search_metadata(filter)
+    all_data = prodat_monitoring.search_metadata(filter)
     model_version_ids = set(data['model_version_id'] for data in all_data)
     deployment_version_ids = set(
         data['deployment_version_id'] for data in all_data)
@@ -284,7 +284,7 @@ def model_deployments(model_name):
     for deployment_version_id in deployment_version_ids:
         for model_version_id in model_version_ids:
             try:
-                deployment_info = datmo_monitoring.get_deployment_info(
+                deployment_info = prodat_monitoring.get_deployment_info(
                     deployment_version_id=deployment_version_id)
             except:
                 break

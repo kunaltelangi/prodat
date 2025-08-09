@@ -1,16 +1,16 @@
 import os
 
-from datmo.core.controller.snapshot import SnapshotController
-from datmo.core.entity.task import Task as CoreTask
-from datmo.core.util.exceptions import InvalidArgumentType
-from datmo.core.util.misc_functions import printable_object, prettify_datetime, format_table
+from prodat.core.controller.snapshot import SnapshotController
+from prodat.core.entity.task import Task as CoreTask
+from prodat.core.util.exceptions import InvalidArgumentType
+from prodat.core.util.misc_functions import printable_object, prettify_datetime, format_table
 
 class Run():
     """Run is an object to enable user access to properties
 
     Parameters
     ----------
-    task_entity : datmo.core.entity.task.Task
+    task_entity : prodat.core.entity.task.Task
         core task entity to reference
 
     Attributes
@@ -161,7 +161,7 @@ class Run():
 
         Returns
         -------
-        datmo.core.entity.task.Task
+        prodat.core.entity.task.Task
             core task object fo the task
         """
         return self._core_task
@@ -171,7 +171,7 @@ class Run():
 
         Returns
         -------
-        datmo.core.entity.snapshot.Snapshot or None
+        prodat.core.entity.snapshot.Snapshot or None
             core snapshot object for the Snapshot
         """
         snapshot_controller = SnapshotController()

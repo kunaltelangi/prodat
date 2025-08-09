@@ -1,4 +1,4 @@
-from datmo.core.controller.base import BaseController
+from prodat.core.controller.base import BaseController
 
 class ModelController(BaseController):
     """ModelController inherits from BaseController and manages business logic related to the

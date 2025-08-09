@@ -8,7 +8,7 @@ except NameError:
 
 class S3RemoteFileDriver(object):
     def __init__(self):
-        self.type = "remote-datmo"
+        self.type = "remote-prodat"
 
     @staticmethod
     def upload(src_filepath, s3_presigned_url):

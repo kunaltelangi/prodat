@@ -1,11 +1,11 @@
 
-##### datmo essential ###
+##### prodat essential ###
 # Mount essential folders
 VOLUME ["/task", "/data", "/home"]
 
 # Setup environment_driver variables
-ENV DATMO_TASK_DIR=/task
-ENV DATMO_DATA_DIR=/data
+ENV prodat_TASK_DIR=/task
+ENV prodat_DATA_DIR=/data
 
 RUN mkdir -p /task/ /home/ /data/
 

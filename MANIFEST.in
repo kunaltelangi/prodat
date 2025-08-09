@@ -1,10 +1,10 @@
-include datmo/core/controller/environment/driver/templates/baseDockerfile
-include datmo/core/controller/environment/driver/templates/python2Dockerfile
-include datmo/core/controller/environment/driver/templates/python3Dockerfile
-include datmo/core/util/validation/schemas.yml
-include datmo/core/controller/environment/driver/config/docker.json
-include datmo/VERSION
-graft datmo/dashboard
+include prodat/core/controller/environment/driver/templates/baseDockerfile
+include prodat/core/controller/environment/driver/templates/python2Dockerfile
+include prodat/core/controller/environment/driver/templates/python3Dockerfile
+include prodat/core/util/validation/schemas.yml
+include prodat/core/controller/environment/driver/config/docker.json
+include prodat/VERSION
+graft prodat/dashboard
 prune examples
 prune docs
 prune templates

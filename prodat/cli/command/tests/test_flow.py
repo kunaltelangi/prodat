@@ -18,22 +18,22 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.config import Config
-from datmo.cli.driver.helper import Helper
-from datmo.cli.command.environment import EnvironmentCommand
-from datmo.cli.command.project import ProjectCommand
-from datmo.cli.command.snapshot import SnapshotCommand
-from datmo.cli.command.run import RunCommand
+from prodat.config import Config
+from prodat.cli.driver.helper import Helper
+from prodat.cli.command.environment import EnvironmentCommand
+from prodat.cli.command.project import ProjectCommand
+from prodat.cli.command.snapshot import SnapshotCommand
+from prodat.cli.command.run import RunCommand
 
-from datmo.core.util.misc_functions import pytest_docker_environment_failed_instantiation
+from prodat.core.util.misc_functions import pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestFlow():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         Config().set_home(self.temp_dir)
         self.cli_helper = Helper()
 
@@ -93,7 +93,7 @@ class TestFlow():
         snapshot_ls_result = self.snapshot_command.execute()
         return snapshot_ls_result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_flow_1(self):
         # Flow
         # Step 1: environment setup
@@ -123,7 +123,7 @@ class TestFlow():
         snapshot_ls_result = self.__snapshot_ls()
         assert snapshot_ls_result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_flow_2(self):
         # Flow interruption in environment
         # Step 1: interrupted environment setup
@@ -168,7 +168,7 @@ class TestFlow():
         snapshot_ls_result = self.__snapshot_ls()
         assert snapshot_ls_result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_flow_3(self):
         # Flow interruption in run
         # Step 1: environment setup
@@ -212,7 +212,7 @@ class TestFlow():
         snapshot_ls_result = self.__snapshot_ls()
         assert snapshot_ls_result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_flow_4(self):
         # Flow interruption in snapshot create
         # Step 1: environment setup

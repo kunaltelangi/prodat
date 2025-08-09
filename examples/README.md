@@ -1,15 +1,15 @@
 # Examples
 
-In order to run the examples, make sure that you have datmo properly installed with the latest 
+In order to run the examples, make sure that you have prodat properly installed with the latest 
 stable or development version. You can install it with the following command:
 
 ```
-$ pip install datmo
+$ pip install prodat
 ```
 
 ## Using the Examples
 ### CLI (Standalone)
-The datmo CLI can work entirely as a standalone tool. It can also be used in conjunction with our language-specific SDKs to enhance the experience of the user and enable more granular control over model management during runtime.
+The prodat CLI can work entirely as a standalone tool. It can also be used in conjunction with our language-specific SDKs to enhance the experience of the user and enable more granular control over model management during runtime.
 
 See [CLI flow examples](/examples/cli) for instructions.
 
@@ -31,7 +31,7 @@ In the future, these system calls will be replaced with a more intuitive SDK.
 See [R flow examples](/examples/R) for instructions
 
 ## Examples
-Listed below are actions you might want to take with Datmo. For each
+Listed below are actions you might want to take with prodat. For each
 we have listed if there are any example for each type of flow. You can 
 navigate to the specific flow folder to find the exact instructions for
 each example. 
@@ -58,7 +58,7 @@ Rerun a single task (command/script or workspace) [CLI](/examples/cli/)
 #### Environment setup
 * Setting up a project environment [(CLI)](/examples/cli/environment_setup.sh)
     * From fresh repository
-    * From existing datmo project
+    * From existing prodat project
     * Bringing your own
 * Initializing a workspace [(CLI)](/examples/cli/workspace_setup.sh)
     * opening a Jupyter notebook

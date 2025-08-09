@@ -1,7 +1,7 @@
 """
 Tests for Code
 """
-from datmo.core.entity.code import Code
+from prodat.core.entity.code import Code
 
 class TestCode():
     def setup_class(self):

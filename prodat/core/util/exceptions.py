@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from datmo.core.util.i18n import get as __
+from prodat.core.util.i18n import get as __
 
 class ArgumentError(Exception):
     pass
@@ -34,7 +34,7 @@ class InvalidProjectPath(ProjectException):
 class ProjectNotInitialized(ProjectException):
     pass
 
-class DatmoModelNotInitialized(ProjectException):
+class prodatModelNotInitialized(ProjectException):
     pass
 
 class InvalidOperation(Exception):
@@ -188,7 +188,7 @@ class ValidationFailed(ArgumentError):
             err_str += "'%s': %s\n" % (name, self.errors[name])
         return err_str
 
-class DatmoFolderInWorkTree(CodeException):
+class prodatFolderInWorkTree(CodeException):
     pass
 
 class UnstagedChanges(Exception):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script to upgrade Datmo codebase from Python 2/3 compatibility to Python 3.x only
+Script to upgrade prodat codebase from Python 2/3 compatibility to Python 3.x only
 """
 
 import os
@@ -63,8 +63,8 @@ def upgrade_file(filepath):
 
 def main():
     """Main upgrade function"""
-    datmo_root = Path(__file__).parent
-    python_files = list(datmo_root.glob('**/*.py'))
+    prodat_root = Path(__file__).parent
+    python_files = list(prodat_root.glob('**/*.py'))
     
     print(f"Found {len(python_files)} Python files to upgrade")
     print("=" * 50)

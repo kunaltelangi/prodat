@@ -1,13 +1,13 @@
-from datmo.core.util.i18n import get as __
-from datmo.cli.command.base import BaseCommand
+from prodat.core.util.i18n import get as __
+from prodat.cli.command.base import BaseCommand
 
-class DatmoCommand(BaseCommand):
+class prodatCommand(BaseCommand):
     def __init__(self, cli_helper):
-        super(DatmoCommand, self).__init__(cli_helper)
+        super(prodatCommand, self).__init__(cli_helper)
 
     def usage(self):
-        self.cli_helper.echo(__("argparser", "cli.datmo.usage"))
+        self.cli_helper.echo(__("argparser", "cli.prodat.usage"))
 
-    def datmo(self):
+    def prodat(self):
         self.parse(["--help"])
         return True

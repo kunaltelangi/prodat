@@ -4,7 +4,7 @@ try:
     to_unicode = str
 except NameError:
     to_unicode = str
-from datmo.core.util.lang import get_lang
+from prodat.core.util.lang import get_lang
 
 MESSAGES = get_lang()
 

@@ -25,31 +25,31 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.config import Config
-from datmo.core.controller.project import ProjectController
-from datmo.core.controller.environment.environment import \
+from prodat.config import Config
+from prodat.core.controller.project import ProjectController
+from prodat.core.controller.environment.environment import \
     EnvironmentController
-from datmo.core.entity.environment import Environment
-from datmo.core.util.exceptions import (
+from prodat.core.entity.environment import Environment
+from prodat.core.util.exceptions import (
     EntityNotFound, RequiredArgumentMissing, TooManyArgumentsFound,
     FileAlreadyExistsError, UnstagedChanges, EnvironmentDoesNotExist,
     ProjectNotInitialized)
-from datmo.core.util.misc_functions import check_docker_inactive, pytest_docker_environment_failed_instantiation
+from prodat.core.util.misc_functions import check_docker_inactive, pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestEnvironmentController():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         Config().set_home(self.temp_dir)
         self.project_controller = ProjectController()
         self.environment_ids = []
 
     def teardown_method(self):
-        if not check_docker_inactive(test_datmo_dir,
-                                     Config().datmo_directory_name):
+        if not check_docker_inactive(test_prodat_dir,
+                                     Config().prodat_directory_name):
             if self.project_controller.is_initialized:
                 self.environment_controller = EnvironmentController()
                 for env_id in list(set(self.environment_ids)):
@@ -121,9 +121,9 @@ class TestEnvironmentController():
         assert result.name == "%s:%s-%s" % (options['environment_framework'],
                                             options['environment_type'],
                                             options['environment_language'])
-        assert result.description == "supported environment created by datmo"
+        assert result.description == "supported environment created by prodat"
         assert os.path.isfile(output_definition_filepath)
-        assert "FROM datmo/data-analytics:cpu-py27" in open(
+        assert "FROM prodat/data-analytics:cpu-py27" in open(
             output_definition_filepath, "r").read()
         # Test success setup again (files present, but staged)
         options = {
@@ -140,9 +140,9 @@ class TestEnvironmentController():
         assert result.name == "%s:%s-%s" % (options['environment_framework'],
                                             options['environment_type'],
                                             options['environment_language'])
-        assert result.description == "supported environment created by datmo"
+        assert result.description == "supported environment created by prodat"
         assert os.path.isfile(output_definition_filepath)
-        assert "FROM datmo/data-analytics:cpu-py27" in open(
+        assert "FROM prodat/data-analytics:cpu-py27" in open(
             output_definition_filepath, "r").read()
 
         # Test failure in downstream function (e.g. bad inputs, no name given)
@@ -278,7 +278,7 @@ class TestEnvironmentController():
                       "r").read()
         print(repr(output))
         assert not os.path.isfile(
-            os.path.join(file_collection_dir, "datmoDockerfile"))
+            os.path.join(file_collection_dir, "prodatDockerfile"))
         print(repr(output))
         assert environment_obj.unique_hash == "fd725be022ce93f870c81e2ee170189c"
         assert environment_obj.name == "test"
@@ -398,7 +398,7 @@ class TestEnvironmentController():
 
         assert failed
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_build(self):
         # 1) Test build when no environment given
         # 2) Test build when definition path exists and given
@@ -474,14 +474,14 @@ class TestEnvironmentController():
         assert result
 
         # 6) Test option 6
-        # Create environment definition in project environment directory with datmo base image
+        # Create environment definition in project environment directory with prodat base image
         definition_filepath = os.path.join(
             self.environment_controller.environment_driver.
             environment_directory_path, "Dockerfile")
         random_text = str(uuid.uuid1())
         with open(definition_filepath, "wb") as f:
             f.write(
-                to_bytes("FROM datmo/data-analytics:cpu-py27%s" % os.linesep))
+                to_bytes("FROM prodat/data-analytics:cpu-py27%s" % os.linesep))
             f.write(to_bytes(str("RUN echo " + random_text)))
         environment_obj_4 = self.environment_controller.create({})
         self.environment_ids.append(environment_obj_4.id)
@@ -489,7 +489,7 @@ class TestEnvironmentController():
             environment_obj_4.id, workspace="notebook")
         assert result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_extract_workspace_url(self):
         # Create environment definition
         self.project_controller.init("test5", "test description")
@@ -500,7 +500,7 @@ class TestEnvironmentController():
         with open(definition_filepath, "wb") as f:
             f.write(
                 to_bytes(
-                    "FROM datmo/python-base:cpu-py27-notebook" + os.linesep))
+                    "FROM prodat/python-base:cpu-py27-notebook" + os.linesep))
             f.write(to_bytes(str("RUN echo " + random_text)))
 
         image_name = "test"
@@ -515,7 +515,7 @@ class TestEnvironmentController():
             image_name, "notebook")
         assert workspace_url == None
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run(self):
         # Test run simple command with simple Dockerfile
         self.project_controller.init("test5", "test description")
@@ -648,7 +648,7 @@ class TestEnvironmentController():
         assert run_id
         assert logs
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_interactive_run(self):
         # 1) Test run interactive terminal in environment
         # 2) Test run jupyter notebook in environment
@@ -819,7 +819,7 @@ class TestEnvironmentController():
             failed = True
         assert failed
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_delete(self):
         self.project_controller.init("test5", "test description")
         self.environment_controller = EnvironmentController()
@@ -851,7 +851,7 @@ class TestEnvironmentController():
         assert result == True and \
             thrown == True
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_stop_failure(self):
         # 1) Test failure with RequiredArgumentMissing
         # 2) Test failure with TooManyArgumentsFound
@@ -874,7 +874,7 @@ class TestEnvironmentController():
             failed = True
         assert failed
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_stop_success(self):
         # TODO: test more run options
         # 1) Test run_id input to stop
@@ -894,7 +894,7 @@ class TestEnvironmentController():
             "command": ["sh", "-c", "echo yo"],
             "ports": ["8888:8888"],
             "name":
-                "datmo-task-" + self.environment_controller.model.id + "-" +
+                "prodat-task-" + self.environment_controller.model.id + "-" +
                 "test",
             "volumes":
                 None,
@@ -945,7 +945,7 @@ class TestEnvironmentController():
         _, _, _ = \
             self.environment_controller.run(environment_obj.id, run_options, log_filepath)
         return_code = self.environment_controller.stop(
-            match_string="datmo-task-" + self.environment_controller.model.id)
+            match_string="prodat-task-" + self.environment_controller.model.id)
 
         assert return_code
 
@@ -959,7 +959,7 @@ class TestEnvironmentController():
             "command": ["sh", "-c", "echo yo"],
             "ports": ["8889:8889"],
             "name":
-                "datmo-task-" + self.environment_controller.model.id + "-" +
+                "prodat-task-" + self.environment_controller.model.id + "-" +
                 "test2",
             "volumes":
                 None,
@@ -1134,7 +1134,7 @@ class TestEnvironmentController():
                          environment_directory_path, "Dockerfile"))
         assert not os.path.isfile(
             os.path.join(self.environment_controller.environment_driver.
-                         environment_directory_path, "datmoDockerfile"))
+                         environment_directory_path, "prodatDockerfile"))
         assert not os.path.isfile(
             os.path.join(self.environment_controller.environment_driver.
                          environment_directory_path, "hardware_info"))
@@ -1171,7 +1171,7 @@ class TestEnvironmentController():
                          environment_directory_path, "Dockerfile"))
         assert not os.path.isfile(
             os.path.join(self.environment_controller.environment_driver.
-                         environment_directory_path, "datmoDockerfile"))
+                         environment_directory_path, "prodatDockerfile"))
         assert not os.path.isfile(
             os.path.join(self.environment_controller.environment_driver.
                          environment_directory_path, "hardware_info"))

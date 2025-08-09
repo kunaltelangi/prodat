@@ -1,7 +1,7 @@
 """
 Tests for User
 """
-from datmo.core.entity.user import User
+from prodat.core.entity.user import User
 
 class TestUser():
     def setup_class(self):

@@ -22,25 +22,25 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.snapshot import create, ls, update, delete
-from datmo.config import Config
-from datmo.snapshot import Snapshot
-# from datmo.task import run
-from datmo.core.entity.snapshot import Snapshot as CoreSnapshot
-from datmo.core.controller.project import ProjectController
-from datmo.core.controller.task import TaskController
-from datmo.core.util.exceptions import (InvalidProjectPath,
+from prodat.snapshot import create, ls, update, delete
+from prodat.config import Config
+from prodat.snapshot import Snapshot
+# from prodat.task import run
+from prodat.core.entity.snapshot import Snapshot as CoreSnapshot
+from prodat.core.controller.project import ProjectController
+from prodat.core.controller.task import TaskController
+from prodat.core.util.exceptions import (InvalidProjectPath,
                                         SnapshotCreateFromTaskArgs,
                                         EntityNotFound, DoesNotExist)
-from datmo.core.util.misc_functions import pytest_docker_environment_failed_instantiation
+from prodat.core.util.misc_functions import pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestSnapshotModule():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         Config().set_home(self.temp_dir)
         _ = ProjectController().init("test", "test description")
         self.input_dict = {
@@ -137,7 +137,7 @@ class TestSnapshotModule():
         assert snapshot_obj_3.stats == {}
         assert snapshot_obj_3 != snapshot_obj_1
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_create_from_task(self):
         # 1) Test if success with task files, results, and message
         # 2) Test if success with user given config and stats

@@ -1,5 +1,5 @@
 """
-Tests for Datmo CLI Helper
+Tests for prodat CLI Helper
 """
 from future import standard_library
 standard_library.install_aliases()
@@ -22,11 +22,11 @@ except NameError:
 #     # Python 3
 #     import builtins as __builtin__
 
-from datmo.cli.driver.helper import Helper
-from datmo.core.util.exceptions import ArgumentError
-from datmo.cli.command.project import ProjectCommand
-from datmo.cli.command.snapshot import SnapshotCommand
-from datmo.cli.command.environment import EnvironmentCommand
+from prodat.cli.driver.helper import Helper
+from prodat.core.util.exceptions import ArgumentError
+from prodat.cli.command.project import ProjectCommand
+from prodat.cli.command.snapshot import SnapshotCommand
+from prodat.cli.command.environment import EnvironmentCommand
 
 class TestHelper():
     # https://stackoverflow.com/questions/35851323/pytest-how-to-test-a-function-with-input-call/36377194
@@ -35,9 +35,9 @@ class TestHelper():
         # provide mountable tmp directory for docker
         tempfile.tempdir = "/tmp" if not platform.system(
         ) == "Windows" else None
-        test_datmo_dir = os.environ.get('TEST_DATMO_DIR',
+        test_prodat_dir = os.environ.get('TEST_prodat_DIR',
                                         tempfile.gettempdir())
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         self.orig_stdin = sys.stdin
         self.cli = Helper()
 

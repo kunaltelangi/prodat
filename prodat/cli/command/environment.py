@@ -2,12 +2,12 @@
 import os
 from datetime import datetime
 
-from datmo.core.util.i18n import get as __
-from datmo.cli.driver.helper import Helper
-from datmo.core.controller.environment.environment import EnvironmentController
-from datmo.cli.command.project import ProjectCommand
-from datmo.core.util.exceptions import EnvironmentDoesNotExist
-from datmo.core.util.misc_functions import printable_object, prettify_datetime
+from prodat.core.util.i18n import get as __
+from prodat.cli.driver.helper import Helper
+from prodat.core.controller.environment.environment import EnvironmentController
+from prodat.cli.command.project import ProjectCommand
+from prodat.core.util.exceptions import EnvironmentDoesNotExist
+from prodat.core.util.misc_functions import printable_object, prettify_datetime
 
 class EnvironmentCommand(ProjectCommand):
     def __init__(self, cli_helper):

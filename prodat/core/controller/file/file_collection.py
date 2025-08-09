@@ -1,11 +1,11 @@
 import os
 import shutil
 
-from datmo.core.util.i18n import get as __
-from datmo.core.controller.base import BaseController
-from datmo.core.util.misc_functions import list_all_filepaths, get_datmo_temp_path
-from datmo.core.entity.file_collection import FileCollection
-from datmo.core.util.exceptions import PathDoesNotExist, EnvironmentInitFailed, FileNotInitialized, UnstagedChanges
+from prodat.core.util.i18n import get as __
+from prodat.core.controller.base import BaseController
+from prodat.core.util.misc_functions import list_all_filepaths, get_prodat_temp_path
+from prodat.core.entity.file_collection import FileCollection
+from prodat.core.util.exceptions import PathDoesNotExist, EnvironmentInitFailed, FileNotInitialized, UnstagedChanges
 
 class FileCollectionController(BaseController):
     """FileCollectionController inherits from BaseController and manages business logic related to the
@@ -185,7 +185,7 @@ class FileCollectionController(BaseController):
             ])
 
         # Create a temp dir to use for calculating the hash
-        _temp_dir = get_datmo_temp_path(self.home)
+        _temp_dir = get_prodat_temp_path(self.home)
 
         # Hash the paths of the files
         dirhash = self.file_driver.calculate_hash_paths(paths, _temp_dir)
@@ -258,8 +258,8 @@ class FileCollectionController(BaseController):
 
         if self._calculate_project_files_hash() == file_hash:
             return True
-        # Remove all content from `datmo_file` folder
-        # TODO Use datmo environment path as a class attribute
+        # Remove all content from `prodat_file` folder
+        # TODO Use prodat environment path as a class attribute
         for file in os.listdir(self.file_driver.files_directory):
             file_path = os.path.join(self.file_driver.files_directory, file)
             try:

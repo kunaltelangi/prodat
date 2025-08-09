@@ -1,1 +1,1 @@
-FROM datmo/xgboost:cpu
+FROM prodat/xgboost:cpu

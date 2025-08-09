@@ -3,7 +3,7 @@ Tests for EnvironmentDriver
 """
 
 import unittest
-from datmo.core.controller.environment.driver import EnvironmentDriver
+from prodat.core.controller.environment.driver import EnvironmentDriver
 
 class TestEnvironmentDriver(unittest.TestCase):
     def test_init(self):

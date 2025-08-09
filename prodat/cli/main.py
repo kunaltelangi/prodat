@@ -3,23 +3,23 @@
 import os
 import sys
 
-from datmo.cli.command.base import BaseCommand
-from datmo.cli.driver.helper import Helper
-from datmo.core.util.exceptions import CLIArgumentError
-from datmo.core.util.i18n import get as __
-from datmo.core.util.logger import DatmoLogger
-from datmo.config import Config
+from prodat.cli.command.base import BaseCommand
+from prodat.cli.driver.helper import Helper
+from prodat.core.util.exceptions import CLIArgumentError
+from prodat.core.util.i18n import get as __
+from prodat.core.util.logger import prodatLogger
+from prodat.config import Config
 
 def main():
     cli_helper = Helper()
     # Config is required to run first so it can
-    # initialize/find datmo home directory (.datmo)
+    # initialize/find prodat home directory (.prodat)
     # This is required for logging to place the logs in a
     # place for the user.
     config = Config()
     config.set_home(os.getcwd())
 
-    log = DatmoLogger.get_logger(__name__)
+    log = prodatLogger.get_logger(__name__)
     log.info("handling command %s", config.home)
 
     # parse_args defaults to [1:] for args, but you need to
@@ -74,7 +74,7 @@ def main():
             command_name = "run"
         command_class = cli_helper.get_command_class(command_name)
     elif len(sys.argv) == 1:
-        command_name = "datmo_command"
+        command_name = "prodat_command"
         command_class = cli_helper.get_command_class(command_name)
     else:
         command_class = BaseCommand

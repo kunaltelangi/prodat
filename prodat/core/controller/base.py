@@ -1,11 +1,11 @@
 import os
 
-from datmo.core.util.i18n import get as __
-from datmo.core.util.logger import DatmoLogger
-from datmo.core.util import get_class_contructor
-from datmo.core.util.json_store import JSONStore
-from datmo.core.util.exceptions import (InvalidProjectPath)
-from datmo.config import Config
+from prodat.core.util.i18n import get as __
+from prodat.core.util.logger import prodatLogger
+from prodat.core.util import get_class_contructor
+from prodat.core.util.json_store import JSONStore
+from prodat.core.util.exceptions import (InvalidProjectPath)
+from prodat.config import Config
 
 class BaseController(object):
     """BaseController is used to setup the repository. It serves as the basis for all other Controller objects
@@ -21,11 +21,11 @@ class BaseController(object):
         absolute filepath for the location of the project
     config : JSONStore
         this is the set of configurations used to create a project
-    dal : datmo.core.storage.DAL
-    model : datmo.core.entity.model.Model
-    code_driver : datmo.core.controller.code.driver.CodeDriver
-    file_driver : datmo.core.controller.file.driver.FileDriver
-    environment_driver : datmo.core.controller.environment.driver.EnvironmentDriver
+    dal : prodat.core.storage.DAL
+    model : prodat.core.entity.model.Model
+    code_driver : prodat.core.controller.code.driver.CodeDriver
+    file_driver : prodat.core.controller.file.driver.FileDriver
+    environment_driver : prodat.core.controller.environment.driver.EnvironmentDriver
     is_initialized : bool
 
     Methods
@@ -45,7 +45,7 @@ class BaseController(object):
         if not os.path.isdir(self.home):
             raise InvalidProjectPath(
                 __("error", "controller.base.__init__", self.home))
-        self.logger = DatmoLogger.get_logger(__name__)
+        self.logger = prodatLogger.get_logger(__name__)
         # property caches and initial values
         self._is_initialized = False
         self._dal = None
@@ -120,31 +120,31 @@ class BaseController(object):
         return {
             "controller.code.driver": {
                 "class_constructor":
-                    "datmo.core.controller.code.driver.file.FileCodeDriver",
+                    "prodat.core.controller.code.driver.file.FileCodeDriver",
                 "options": {
                     "root": self.home,
-                    "datmo_directory_name": Config().datmo_directory_name
+                    "prodat_directory_name": Config().prodat_directory_name
                 }
             },
             "controller.file.driver": {
                 "class_constructor":
-                    "datmo.core.controller.file.driver.local.LocalFileDriver",
+                    "prodat.core.controller.file.driver.local.LocalFileDriver",
                 "options": {
                     "root": self.home,
-                    "datmo_directory_name": Config().datmo_directory_name
+                    "prodat_directory_name": Config().prodat_directory_name
                 }
             },
             "controller.environment.driver": {
                 "class_constructor":
-                    "datmo.core.controller.environment.driver.dockerenv.DockerEnvironmentDriver",
+                    "prodat.core.controller.environment.driver.dockerenv.DockerEnvironmentDriver",
                 "options": {
                     "root": self.home,
-                    "datmo_directory_name": Config().datmo_directory_name,
+                    "prodat_directory_name": Config().prodat_directory_name,
                     "docker_execpath": "docker"
                 }
             },
             "storage.local": {
-                "class_constructor": "datmo.core.storage.local.dal.LocalDAL",
+                "class_constructor": "prodat.core.storage.local.dal.LocalDAL",
                 "options": {
                     "driver_type": "blitzdb",
                     "driver_options": {
@@ -152,7 +152,7 @@ class BaseController(object):
                             "file",
                         "connection_string":
                             os.path.join(self.home,
-                                         Config().datmo_directory_name,
+                                         Config().prodat_directory_name,
                                          "database")
                     }
                 }

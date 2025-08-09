@@ -2,7 +2,7 @@ import os
 import yaml
 from cerberus import Validator
 from cerberus.schema import SchemaError
-from datmo.core.util.exceptions import ValidationFailed, ValidationSchemaMissing
+from prodat.core.util.exceptions import ValidationFailed, ValidationSchemaMissing
 
 # http://docs.python-cerberus.org/en/stable/usage.html
 

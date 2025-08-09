@@ -10,16 +10,16 @@ try:
 except NameError:
     to_unicode = str
 
-from datmo.logger import Logger
+from prodat.logger import Logger
 
 class TestLoggerModule():
     def setup_method(self):
         # provide mountable tmp directory for docker
         tempfile.tempdir = "/tmp" if not platform.system(
         ) == "Windows" else None
-        test_datmo_dir = os.environ.get('TEST_DATMO_DIR',
+        test_prodat_dir = os.environ.get('TEST_prodat_DIR',
                                         tempfile.gettempdir())
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         self.logger = Logger(task_dir=self.temp_dir)
 
     def teardown_method(self):

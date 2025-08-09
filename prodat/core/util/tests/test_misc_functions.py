@@ -26,22 +26,22 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.core.util.misc_functions import (
+from prodat.core.util.misc_functions import (
     bytes2human, create_unique_hash, mutually_exclusive, is_project_dir,
     find_project_dir, grep, prettify_datetime, format_table,
-    parse_cli_key_value, convert_keys_to_string, get_datmo_temp_path,
+    parse_cli_key_value, convert_keys_to_string, get_prodat_temp_path,
     parse_path, parse_paths, list_all_filepaths)
 
-from datmo.core.util.exceptions import MutuallyExclusiveArguments, RequiredArgumentMissing, InvalidDestinationName, PathDoesNotExist, TooManyArgumentsFound
+from prodat.core.util.exceptions import MutuallyExclusiveArguments, RequiredArgumentMissing, InvalidDestinationName, PathDoesNotExist, TooManyArgumentsFound
 
 class TestMiscFunctions():
     # TODO: Add more cases for each test
     def setup_method(self):
         # provide mountable tmp directory for docker
         tempfile.tempdir = "/tmp" if platform.system() != "Windows" else None
-        test_datmo_dir = os.environ.get('TEST_DATMO_DIR',
+        test_prodat_dir = os.environ.get('TEST_prodat_DIR',
                                         tempfile.gettempdir())
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
 
     def test_create_unique_hash(self):
         result_hash_1 = create_unique_hash()
@@ -100,12 +100,12 @@ class TestMiscFunctions():
     def test_find_project_dir(self):
         exec_path = os.path.join(self.temp_dir, "1", "1", "1")
         os.makedirs(exec_path)
-        os.makedirs(os.path.join(self.temp_dir, ".datmo"))
+        os.makedirs(os.path.join(self.temp_dir, ".prodat"))
         project_path = find_project_dir(exec_path)
         assert project_path == self.temp_dir
 
     def test_is_project_dir(self):
-        os.makedirs(os.path.join(self.temp_dir, ".datmo"))
+        os.makedirs(os.path.join(self.temp_dir, ".prodat"))
         assert is_project_dir(self.temp_dir)
 
     def test_bytes2human(self):
@@ -175,18 +175,18 @@ class TestMiscFunctions():
         assert "test.txt" in result
         assert os.path.join("test_dir", "test.txt") in result
 
-    def test_get_datmo_temp_path(self):
-        datmo_temp_path = get_datmo_temp_path(self.temp_dir)
+    def test_get_prodat_temp_path(self):
+        prodat_temp_path = get_prodat_temp_path(self.temp_dir)
         exists = False
-        if os.path.isdir(datmo_temp_path):
+        if os.path.isdir(prodat_temp_path):
             exists = True
         assert exists
         # Test if subsequent temp dirs are different
-        datmo_temp_path_1 = get_datmo_temp_path(self.temp_dir)
-        assert datmo_temp_path != datmo_temp_path_1
-        datmo_temp_path_2 = get_datmo_temp_path(self.temp_dir)
-        assert datmo_temp_path != datmo_temp_path_2
-        assert datmo_temp_path_1 != datmo_temp_path_2
+        prodat_temp_path_1 = get_prodat_temp_path(self.temp_dir)
+        assert prodat_temp_path != prodat_temp_path_1
+        prodat_temp_path_2 = get_prodat_temp_path(self.temp_dir)
+        assert prodat_temp_path != prodat_temp_path_2
+        assert prodat_temp_path_1 != prodat_temp_path_2
 
     def test_parse_path(self):
         test_simple = os.path.join(self.temp_dir, "test.txt")

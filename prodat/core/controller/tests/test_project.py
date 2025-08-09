@@ -25,29 +25,29 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.config import Config
-from datmo.core.controller.project import ProjectController
-from datmo.core.controller.snapshot import SnapshotController
-from datmo.core.controller.environment.environment import EnvironmentController
-from datmo.core.controller.task import TaskController
-from datmo.core.entity.snapshot import Snapshot
-from datmo.core.util.exceptions import ValidationFailed
-from datmo.core.util.misc_functions import check_docker_inactive, pytest_docker_environment_failed_instantiation
+from prodat.config import Config
+from prodat.core.controller.project import ProjectController
+from prodat.core.controller.snapshot import SnapshotController
+from prodat.core.controller.environment.environment import EnvironmentController
+from prodat.core.controller.task import TaskController
+from prodat.core.entity.snapshot import Snapshot
+from prodat.core.util.exceptions import ValidationFailed
+from prodat.core.util.misc_functions import check_docker_inactive, pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestProjectController():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         Config().set_home(self.temp_dir)
         self.project_controller = ProjectController()
         self.environment_ids = []
 
     def teardown_method(self):
-        if not check_docker_inactive(test_datmo_dir,
-                                     Config().datmo_directory_name):
+        if not check_docker_inactive(test_prodat_dir,
+                                     Config().prodat_directory_name):
             self.project_controller = ProjectController()
             if self.project_controller.is_initialized:
                 self.environment_controller = EnvironmentController()
@@ -160,7 +160,7 @@ class TestProjectController():
         # })
         assert result == True
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_cleanup_with_environment(self):
         self.project_controller.init("test2", "test description")
         result = self.project_controller.cleanup()
@@ -168,7 +168,7 @@ class TestProjectController():
         assert not self.project_controller.code_driver.is_initialized
         assert not self.project_controller.file_driver.is_initialized
         assert not self.project_controller.environment_driver.list_images(
-            "datmo-test2")
+            "prodat-test2")
         # Ensure that containers built with this image do not exist
         # assert not self.project_controller.environment_driver.list_containers(filters={
         #     "ancestor": image_id
@@ -192,7 +192,7 @@ class TestProjectController():
         assert not unstaged_environment
         assert not unstaged_files
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_status_snapshot_task(self):
         self.project_controller.init("test4", "test description")
         self.snapshot_controller = SnapshotController()

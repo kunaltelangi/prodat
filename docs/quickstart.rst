@@ -9,36 +9,36 @@ Setup:
     - docker (installed and running before starting) 
         Instructions for `Ubuntu <https://docs.docker.com/install/linux/docker-ce/ubuntu/#uninstall-old-versions>`_, `MacOS <https://docs.docker.com/docker-for-mac/install/#install-and-run-docker-for-mac>`_, `Windows <https://docs.docker.com/docker-for-windows/install/>`_
 
-    - datmo 
-        install with ``$ pip install datmo``
+    - prodat 
+        install with ``$ pip install prodat``
 
 
 Steps:
 
-1. Clone this github `project <https://github.com/datmo/hello-world.git>`_.
+1. Clone this github `project <https://github.com/prodat/hello-world.git>`_.
 
-``$ git clone https://github.com/datmo/hello-world.git``
+``$ git clone https://github.com/prodat/hello-world.git``
 
-2. Move into the project, initialize it, and setup the environment using the datmo CLI,
+2. Move into the project, initialize it, and setup the environment using the prodat CLI,
 ::
    $ cd hello-world
-   $ # Initialize the project using datmo
-   $ datmo init
+   $ # Initialize the project using prodat
+   $ prodat init
    $ # Set the name and description for the project
    $ # Enter `y` to setup the environment
    $ # Select `cpu`, `data-analytics`, `py27` based on the questions being asked   
 
 3. Now, run and view your first experiment using the following commands,
 ::
-   $ datmo run 'python script.py'
+   $ prodat run 'python script.py'
    $ # check for your first run using ls command
-   $ datmo ls
+   $ prodat ls
 
 4. Now let's change the environment and script for a new run,
    
 To edit the environment,
 
-``$ vi datmo_environment/Dockerfile``
+``$ vi prodat_environment/Dockerfile``
 
 Add the following line into this `Dockerfile`
 ::
@@ -56,14 +56,14 @@ Uncomment the following lines in the script,
 
 5. Now that we have updated the environment and script, let's run another experiment,
 ::
-   $ datmo run 'python script.py'
+   $ prodat run 'python script.py'
    $ # check for your first run using ls command
-   $ datmo ls
+   $ prodat ls
 
 6. With two test being tracked, we can now rerun any of the previous run with reprocibility,
 ::
    $ # Select the earlier run-id to rerun the first experiment
-   $ datmo rerun < run-id >
+   $ prodat rerun < run-id >
 
 Now, in this hello-world example, you have run two experiments, both which are tracked, and have 
 rerun one of these tracked experiments.
@@ -78,13 +78,13 @@ Spinning up a TensorFlow Jupyter Notebook
 
 Find the proper version for your operating system and install Docker from `this page <https://docs.docker.com/install/#supported-platforms>`_. Check that Docker is installed and running before moving forward.
 
-1. Install datmo using pip:
+1. Install prodat using pip:
 
-``$ pip install datmo``
+``$ pip install prodat``
 
 2. Navigate to a new folder for your project and run:
 
-``$ datmo init``
+``$ prodat init``
 
 3. Create a name and description. When prompted to setup an environment, respond with the following answers:
     - Would you like to set up an environment? : ``y``
@@ -94,7 +94,7 @@ Find the proper version for your operating system and install Docker from `this 
 
 4. Open a jupyter notebook automatically with:
 
-``$ datmo notebook``
+``$ prodat notebook``
 
 Congrats, you now have a functional jupyter notebook with TensorFlow! 
 

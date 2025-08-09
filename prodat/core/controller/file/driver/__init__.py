@@ -7,7 +7,7 @@ class FileDriver(with_metaclass(ABCMeta, object)):
     Methods
     -------
     init()
-        initialize the datmo file structure
+        initialize the prodat file structure
     create(relative_path, directory=False)
         create a file or directory
     exists(relative_path, directory=False)
@@ -34,7 +34,7 @@ class FileDriver(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def init(self):
-        """Initialize the datmo file structure
+        """Initialize the prodat file structure
 
         Returns
         -------

@@ -27,21 +27,21 @@ import tempfile
 import platform
 import timeout_decorator
 
-from datmo.config import Config
-from datmo.cli.driver.helper import Helper
-from datmo.cli.command.environment import EnvironmentCommand
-from datmo.cli.command.project import ProjectCommand
-from datmo.cli.command.workspace import WorkspaceCommand
-from datmo.cli.command.run import RunCommand
-from datmo.core.util.misc_functions import pytest_docker_environment_failed_instantiation
+from prodat.config import Config
+from prodat.cli.driver.helper import Helper
+from prodat.cli.command.environment import EnvironmentCommand
+from prodat.cli.command.project import ProjectCommand
+from prodat.cli.command.workspace import WorkspaceCommand
+from prodat.cli.command.run import RunCommand
+from prodat.core.util.misc_functions import pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestWorkspace():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         Config().set_home(self.temp_dir)
         self.cli_helper = Helper()
 
@@ -65,12 +65,12 @@ class TestWorkspace():
         with open(self.env_def_path, "wb") as f:
             f.write(
                 to_bytes(
-                    str("FROM datmo/python-base:cpu-py27%s" % os.linesep)))
+                    str("FROM prodat/python-base:cpu-py27%s" % os.linesep)))
 
     def teardown_method(self):
         pass
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_notebook(self):
         self.__set_variables()
         test_mem_limit = "4g"
@@ -109,7 +109,7 @@ class TestWorkspace():
 
         assert timed_run_result
 
-        # Stop all running datmo task to not have any containers
+        # Stop all running prodat task to not have any containers
         self.run_command.parse(["stop", "--all"])
         self.run_command.execute()
 
@@ -118,7 +118,7 @@ class TestWorkspace():
         with open(self.env_def_path, "wb") as f:
             f.write(
                 to_bytes(
-                    str("FROM datmo/python-base:cpu-py27%s" % os.linesep)))
+                    str("FROM prodat/python-base:cpu-py27%s" % os.linesep)))
             f.write(to_bytes(str("RUN echo " + random_text)))
 
         self.environment_command.parse([
@@ -144,11 +144,11 @@ class TestWorkspace():
 
         assert timed_run_result
 
-        # Stop all running datmo task
+        # Stop all running prodat task
         self.run_command.parse(["stop", "--all"])
         self.run_command.execute()
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_jupyterlab(self):
         self.__set_variables()
         test_mem_limit = "4g"
@@ -187,7 +187,7 @@ class TestWorkspace():
 
         assert timed_run_result
 
-        # Stop all running datmo task to not have any containers
+        # Stop all running prodat task to not have any containers
         self.run_command.parse(["stop", "--all"])
         self.run_command.execute()
 
@@ -196,7 +196,7 @@ class TestWorkspace():
         with open(self.env_def_path, "wb") as f:
             f.write(
                 to_bytes(
-                    str("FROM datmo/python-base:cpu-py27%s" % os.linesep)))
+                    str("FROM prodat/python-base:cpu-py27%s" % os.linesep)))
             f.write(to_bytes(str("RUN echo " + random_text)))
 
         self.environment_command.parse([
@@ -222,12 +222,12 @@ class TestWorkspace():
 
         assert timed_run_result
 
-        # Stop all running datmo task
+        # Stop all running prodat task
         self.run_command.parse(["stop", "--all"])
         self.run_command.execute()
 
     # Test doesn't take tty as True for docker
-    # @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    # @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     # def test_terminal(self):
     #     self.__set_variables()
     #     test_mem_limit = "4g"
@@ -262,17 +262,17 @@ class TestWorkspace():
     #
     #     assert timed_run_result
     #
-    #     # Stop all running datmo task
+    #     # Stop all running prodat task
     #     self.run_command.parse(["stop", "--all"])
     #     self.run_command.execute()
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_rstudio(self):
         self.__set_variables()
         # Update environment_driver definition
         self.env_def_path = os.path.join(self.temp_dir, "Dockerfile")
         with open(self.env_def_path, "wb") as f:
-            f.write(to_bytes(str("FROM datmo/r-base:cpu%s" % os.linesep)))
+            f.write(to_bytes(str("FROM prodat/r-base:cpu%s" % os.linesep)))
 
         test_mem_limit = "4g"
         # test single ports option before command
@@ -306,14 +306,14 @@ class TestWorkspace():
 
         assert timed_run_result
 
-        # Stop all running datmo task to not have any containers
+        # Stop all running prodat task to not have any containers
         self.run_command.parse(["stop", "--all"])
         self.run_command.execute()
 
         # creating and passing environment id
         random_text = str(uuid.uuid1())
         with open(self.env_def_path, "wb") as f:
-            f.write(to_bytes(str("FROM datmo/r-base:cpu%s" % os.linesep)))
+            f.write(to_bytes(str("FROM prodat/r-base:cpu%s" % os.linesep)))
             f.write(to_bytes(str("RUN echo " + random_text)))
 
         self.environment_command.parse([
@@ -339,6 +339,6 @@ class TestWorkspace():
 
         assert timed_run_result
 
-        # Stop all running datmo task
+        # Stop all running prodat task
         self.run_command.parse(["stop", "--all"])
         self.run_command.execute()

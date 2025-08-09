@@ -25,9 +25,9 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.core.util.i18n import get as __
-from datmo.core.util.exceptions import ArgumentError, ProjectNotInitialized
-from datmo.core.util.misc_functions import check_docker_inactive
+from prodat.core.util.i18n import get as __
+from prodat.core.util.exceptions import ArgumentError, ProjectNotInitialized
+from prodat.core.util.misc_functions import check_docker_inactive
 
 class Helper():
     def __init__(self):
@@ -124,12 +124,12 @@ class Helper():
         return val
 
     def get_command_class(self, command_name):
-        command_path = "datmo.cli.command." + command_name
+        command_path = "prodat.cli.command." + command_name
         try:
             command_class = importlib.import_module(command_path)
         except ImportError:
             try:
-                command_path = "datmo.cli.command." + command_name + "_command"
+                command_path = "prodat.cli.command." + command_name + "_command"
                 command_class = importlib.import_module(command_path)
             except ImportError as ex:
                 self.echo(__("error", "cli.general", str(ex)))
@@ -229,8 +229,8 @@ class Helper():
             def wrapper(self, *args, **kwargs):
                 controller_obj = controller_class()
                 if controller_obj.environment_driver.type == "docker":
-                    # TODO: abstract the datmo_directory_name
-                    if check_docker_inactive(controller_obj.home, ".datmo"):
+                    # TODO: abstract the prodat_directory_name
+                    if check_docker_inactive(controller_obj.home, ".prodat"):
                         Helper.echo(
                             __("error", "general.environment.docker.na"))
                         return

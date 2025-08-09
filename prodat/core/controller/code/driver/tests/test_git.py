@@ -25,11 +25,11 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.core.controller.code.driver.git import (GitCodeDriver,
+from prodat.core.controller.code.driver.git import (GitCodeDriver,
                                                    GitHostDriver)
-from datmo.core.util.exceptions import (CommitFailed, CommitDoesNotExist,
+from prodat.core.util.exceptions import (CommitFailed, CommitDoesNotExist,
                                         PathDoesNotExist, GitExecutionError,
-                                        DatmoFolderInWorkTree, UnstagedChanges)
+                                        prodatFolderInWorkTree, UnstagedChanges)
 
 class TestGitCodeDriver():
     """
@@ -40,9 +40,9 @@ class TestGitCodeDriver():
         # provide mountable tmp directory for docker
         tempfile.tempdir = "/tmp" if not platform.system(
         ) == "Windows" else None
-        test_datmo_dir = os.environ.get('TEST_DATMO_DIR',
+        test_prodat_dir = os.environ.get('TEST_prodat_DIR',
                                         tempfile.gettempdir())
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         self.git_code_manager = GitCodeDriver(
             filepath=self.temp_dir, execpath="git")
 
@@ -76,8 +76,8 @@ class TestGitCodeDriver():
         # Test if there are .git folder already exist
         self.git_code_manager.init()
         assert self.git_code_manager.is_initialized == True
-        # Test when we remove datmo refs
-        shutil.rmtree(os.path.join(self.temp_dir, ".git", "refs", "datmo"))
+        # Test when we remove prodat refs
+        shutil.rmtree(os.path.join(self.temp_dir, ".git", "refs", "prodat"))
         assert self.git_code_manager.is_initialized == False
         # Test when we remove .git folder
         self.git_code_manager.init()
@@ -96,21 +96,21 @@ class TestGitCodeDriver():
         result = another_git_code_manager.is_initialized
         assert result == True
 
-    def test_instantiation_fail_datmo_files_in_worktree(self):
+    def test_instantiation_fail_prodat_files_in_worktree(self):
         self.git_code_manager.init()
-        # Add random file to .datmo directory before next ref
-        os.makedirs(os.path.join(self.git_code_manager.filepath, ".datmo"))
+        # Add random file to .prodat directory before next ref
+        os.makedirs(os.path.join(self.git_code_manager.filepath, ".prodat"))
         random_filepath = os.path.join(self.git_code_manager.filepath,
-                                       ".datmo", ".test")
+                                       ".prodat", ".test")
         with open(random_filepath, "wb") as f:
             f.write(to_bytes(str("test")))
         # Add files and commit then check they exist
-        self.git_code_manager.add(".datmo", "-f")
+        self.git_code_manager.add(".prodat", "-f")
         self.git_code_manager.commit(["-m", "test message"])
         failed = False
         try:
             _ = GitCodeDriver(filepath=self.temp_dir, execpath="git")
-        except DatmoFolderInWorkTree:
+        except prodatFolderInWorkTree:
             failed = True
         assert failed
 
@@ -161,7 +161,7 @@ class TestGitCodeDriver():
             f.write(to_bytes(str("test")))
         commit_hash = self.git_code_manager.create_ref()
         code_ref_path = os.path.join(self.git_code_manager.filepath,
-                                     ".git/refs/datmo/", commit_hash)
+                                     ".git/refs/prodat/", commit_hash)
         assert commit_hash
         assert os.path.isfile(code_ref_path)
         assert self.git_code_manager.latest_commit() == commit_hash
@@ -172,7 +172,7 @@ class TestGitCodeDriver():
             f.write(to_bytes(str("test")))
         commit_hash_2 = self.git_code_manager.create_ref()
         code_ref_path_2 = os.path.join(self.git_code_manager.filepath,
-                                       ".git/refs/datmo/", commit_hash_2)
+                                       ".git/refs/prodat/", commit_hash_2)
         assert commit_hash_2
         assert commit_hash_2 != commit_hash
         assert os.path.isfile(code_ref_path_2)
@@ -220,7 +220,7 @@ class TestGitCodeDriver():
             f.write(to_bytes(str("test")))
         code_id = self.git_code_manager.create_ref()
         code_ref_path = os.path.join(self.git_code_manager.filepath,
-                                     ".git/refs/datmo/", code_id)
+                                     ".git/refs/prodat/", code_id)
         result = self.git_code_manager.exists_ref(code_id)
         assert result == True and \
             os.path.isfile(code_ref_path)
@@ -233,7 +233,7 @@ class TestGitCodeDriver():
             f.write(to_bytes(str("test")))
         code_id = self.git_code_manager.create_ref()
         code_ref_path = os.path.join(self.git_code_manager.filepath,
-                                     ".git/refs/datmo/", code_id)
+                                     ".git/refs/prodat/", code_id)
         result = self.git_code_manager.delete_ref(code_id)
         assert result == True and \
             not os.path.isfile(code_ref_path)
@@ -288,86 +288,86 @@ class TestGitCodeDriver():
         ref_id_1 = self.git_code_manager.create_ref()
         with open(test_filepath, "wb") as f:
             f.write(to_bytes(str("test2")))
-        # Add random file to .datmo directory before next ref
-        os.makedirs(os.path.join(self.git_code_manager.filepath, ".datmo"))
+        # Add random file to .prodat directory before next ref
+        os.makedirs(os.path.join(self.git_code_manager.filepath, ".prodat"))
         random_filepath = os.path.join(self.git_code_manager.filepath,
-                                       ".datmo", ".test")
+                                       ".prodat", ".test")
         with open(random_filepath, "wb") as f:
             f.write(to_bytes(str("test")))
-        # Check to make sure .datmo/.test exists and has contents
+        # Check to make sure .prodat/.test exists and has contents
         assert os.path.isfile(random_filepath) and \
                "test" in open(random_filepath, "r").read()
         # Create second ref
         ref_id_2 = self.git_code_manager.create_ref()
-        # Checkout to previous ref, .datmo should be unaffected
+        # Checkout to previous ref, .prodat should be unaffected
         result = self.git_code_manager.checkout_ref(ref_id_1)
 
         # Check code was properly checked out
         assert ref_id_1 != ref_id_2
         assert result == True and \
             self.git_code_manager.latest_commit() == ref_id_1
-        # Check to make sure .datmo is not affected
+        # Check to make sure .prodat is not affected
         assert os.path.isfile(random_filepath) and \
             "test" in open(random_filepath, "r").read()
 
-    def test_exists_datmo_files_ignored(self):
+    def test_exists_prodat_files_ignored(self):
         self.git_code_manager.init()
-        result = self.git_code_manager.exists_datmo_files_ignored()
+        result = self.git_code_manager.exists_prodat_files_ignored()
         assert result == True
-        # Remove .datmo from exclude
+        # Remove .prodat from exclude
         exclude_file = os.path.join(self.git_code_manager.filepath,
                                     ".git/info/exclude")
         with open(exclude_file) as f:
             lines = f.readlines()
         with open(exclude_file, 'w') as f:
             f.writelines([to_unicode(item) for item in lines[:-2]])
-        result = self.git_code_manager.exists_datmo_files_ignored()
+        result = self.git_code_manager.exists_prodat_files_ignored()
         assert result == False
 
-    def test_ensure_datmo_files_ignored(self):
+    def test_ensure_prodat_files_ignored(self):
         self.git_code_manager.init()
-        # Remove .datmo from exclude
+        # Remove .prodat from exclude
         exclude_file = os.path.join(self.git_code_manager.filepath,
                                     ".git/info/exclude")
         with open(exclude_file) as f:
             lines = f.readlines()
         with open(exclude_file, 'w') as f:
             f.writelines([to_unicode(item) for item in lines[:-2]])
-        result = self.git_code_manager.ensure_datmo_files_ignored()
+        result = self.git_code_manager.ensure_prodat_files_ignored()
         assert result and \
-               self.git_code_manager.exists_datmo_files_ignored()
+               self.git_code_manager.exists_prodat_files_ignored()
 
-    def test_exists_datmo_files_in_worktree(self):
+    def test_exists_prodat_files_in_worktree(self):
         self.git_code_manager.init()
-        # Add random file to .datmo directory before next ref
-        os.makedirs(os.path.join(self.git_code_manager.filepath, ".datmo"))
+        # Add random file to .prodat directory before next ref
+        os.makedirs(os.path.join(self.git_code_manager.filepath, ".prodat"))
         random_filepath = os.path.join(self.git_code_manager.filepath,
-                                       ".datmo", ".test")
+                                       ".prodat", ".test")
         with open(random_filepath, "wb") as f:
             f.write(to_bytes(str("test")))
         # Check that it doesn't exist
-        result = self.git_code_manager.exists_datmo_files_in_worktree()
+        result = self.git_code_manager.exists_prodat_files_in_worktree()
         assert result == False
         # Add files and commit then check they exist
-        self.git_code_manager.add(".datmo", "-f")
+        self.git_code_manager.add(".prodat", "-f")
         self.git_code_manager.commit(["-m", "test message"])
-        result = self.git_code_manager.exists_datmo_files_in_worktree()
+        result = self.git_code_manager.exists_prodat_files_in_worktree()
         assert result == True
 
     # def test_clone(self):
     #     result = self.git_code_manager.clone(
-    #         "https://github.com/datmo/hello-world.git", mode="https")
+    #         "https://github.com/prodat/hello-world.git", mode="https")
     #     assert result and os.path.exists(
     #         os.path.join(self.temp_dir, "hello-world", ".git"))
     #     result = self.git_code_manager.clone(
-    #         "https://github.com/datmo/hello-world.git",
+    #         "https://github.com/prodat/hello-world.git",
     #         repo_name="hello-world-2",
     #         mode="http")
     #     assert result and os.path.exists(
     #         os.path.join(self.temp_dir, "hello-world-2", ".git"))
     #     if self.git_code_manager.git_host_manager.ssh_enabled:
     #         result = self.git_code_manager.clone(
-    #             "https://github.com/datmo/hello-world.git",
+    #             "https://github.com/prodat/hello-world.git",
     #             repo_name="hello-world-3",
     #             mode="ssh")
     #         assert result and os.path.exists(
@@ -375,25 +375,25 @@ class TestGitCodeDriver():
 
     def test_parse_git_url(self):
         parsed = self.git_code_manager._parse_git_url(
-            "https://github.com/datmo/hello-world.git", mode="ssh")
-        assert parsed == "git@github.com:datmo/hello-world.git"
+            "https://github.com/prodat/hello-world.git", mode="ssh")
+        assert parsed == "git@github.com:prodat/hello-world.git"
         parsed = self.git_code_manager._parse_git_url(
-            "https://github.com/datmo/hello-world.git", mode="https")
-        assert parsed == "https://github.com/datmo/hello-world.git"
+            "https://github.com/prodat/hello-world.git", mode="https")
+        assert parsed == "https://github.com/prodat/hello-world.git"
         parsed = self.git_code_manager._parse_git_url(
-            "https://github.com/datmo/hello-world.git", mode="http")
-        assert parsed == "http://github.com/datmo/hello-world.git"
+            "https://github.com/prodat/hello-world.git", mode="http")
+        assert parsed == "http://github.com/prodat/hello-world.git"
         # git@github.com:gitpython-developers/GitPython.git
         # https://github.com/gitpython-developers/GitPython.git
         parsed = self.git_code_manager._parse_git_url(
-            "git://github.com/datmo/hello-world.git", mode="ssh")
-        assert parsed == "git@github.com:datmo/hello-world.git"
+            "git://github.com/prodat/hello-world.git", mode="ssh")
+        assert parsed == "git@github.com:prodat/hello-world.git"
         parsed = self.git_code_manager._parse_git_url(
-            "git://github.com/datmo/hello-world.git", mode="https")
-        assert parsed == "https://github.com/datmo/hello-world.git"
+            "git://github.com/prodat/hello-world.git", mode="https")
+        assert parsed == "https://github.com/prodat/hello-world.git"
         parsed = self.git_code_manager._parse_git_url(
-            "git://github.com/datmo/hello-world.git", mode="http")
-        assert parsed == "http://github.com/datmo/hello-world.git"
+            "git://github.com/prodat/hello-world.git", mode="http")
+        assert parsed == "http://github.com/prodat/hello-world.git"
 
     def test_add(self):
         self.git_code_manager.init()
@@ -528,16 +528,16 @@ class TestGitCodeDriver():
     #     # Test remote add
     #     if self.git_code_manager.git_host_manager.host == "github.com":
     #         result = self.git_code_manager.remote(
-    #             "add", "origin", "https://github.com/datmo/test.git")
+    #             "add", "origin", "https://github.com/prodat/test.git")
     #         remote_url = self.git_code_manager.get_remote_url()
     #         assert result == True and \
-    #             remote_url == "https://github.com/datmo/test.git"
+    #             remote_url == "https://github.com/prodat/test.git"
     #         # Test remote set-url
     #         result = self.git_code_manager.remote(
-    #             "set-url", "origin", "https://github.com/datmo/test.git")
+    #             "set-url", "origin", "https://github.com/prodat/test.git")
     #         remote_url = self.git_code_manager.get_remote_url()
     #         assert result == True and \
-    #             remote_url == "https://github.com/datmo/test.git"
+    #             remote_url == "https://github.com/prodat/test.git"
 
     # def test_get_remote_url(self):
     #     self.git_code_manager.init()
@@ -547,11 +547,11 @@ class TestGitCodeDriver():
     #     # Check if properly returns value set
     #     if self.git_code_manager.git_host_manager.host == "github.com":
     #         self.git_code_manager.remote("add", "origin",
-    #                                      "https://github.com/datmo/test.git")
+    #                                      "https://github.com/prodat/test.git")
     #         self.git_code_manager.remote("set-url", "origin",
-    #                                      "https://github.com/datmo/test.git")
+    #                                      "https://github.com/prodat/test.git")
     #         remote_url = self.git_code_manager.get_remote_url()
-    #         assert remote_url == "https://github.com/datmo/test.git"
+    #         assert remote_url == "https://github.com/prodat/test.git"
 
     # def test_fetch(self):
     #     pass
@@ -567,25 +567,25 @@ class TestGitCodeDriver():
     #     self.git_code_manager.commit(["-m", "test"])
     #     if self.git_code_manager.git_host_manager.host == "github":
     #         self.git_code_manager.remote("add", "origin",
-    #                                      "https://github.com/datmo/test.git")
+    #                                      "https://github.com/prodat/test.git")
     #     result = self.git_code_manager.push("origin", name="master")
     #     assert result == True
 
     # def test_pull(self):
     #     pass
 
-    # Datmo refs
+    # prodat refs
     def test_exist_code_refs_dir(self):
         self.git_code_manager.init()
         result = self.git_code_manager.exists_code_refs_dir()
         assert result == True
-        dir = ".git/refs/datmo"
+        dir = ".git/refs/prodat"
         shutil.rmtree(os.path.join(self.git_code_manager.filepath, dir))
         result = self.git_code_manager.exists_code_refs_dir()
         assert result == False
 
     def test_ensure_code_refs_dir(self):
-        dir = ".git/refs/datmo"
+        dir = ".git/refs/prodat"
         self.git_code_manager.init()
         result = self.git_code_manager.ensure_code_refs_dir()
         assert result == True and \
@@ -600,7 +600,7 @@ class TestGitCodeDriver():
         assert result == True and \
             not os.path.isdir(
                 os.path.join(self.git_code_manager.filepath,
-                             ".git/refs/datmo")
+                             ".git/refs/prodat")
             )
 
 class TestGitHostDriver():

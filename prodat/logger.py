@@ -5,8 +5,8 @@ try:
 except NameError:
     str = str
 
-from datmo.core.util.json_store import JSONStore
-from datmo.core.util.exceptions import InvalidArgumentType
+from prodat.core.util.json_store import JSONStore
+from prodat.core.util.exceptions import InvalidArgumentType
 
 class Logger():
     """Logger is a class to enable user to store properties

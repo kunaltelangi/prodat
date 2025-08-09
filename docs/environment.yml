@@ -1,4 +1,4 @@
-name: datmo-docs
+name: prodat-docs
 channels:
     - conda-forge
 dependencies:

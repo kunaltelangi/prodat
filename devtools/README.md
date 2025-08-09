@@ -30,13 +30,13 @@ $ pandoc --from=markdown --to=rst --output=MY_FILE.rst MY_FILE.md
 ```
 
 ## Testing
-The testing done below emulates what is done in the build on [travis](https://travis-ci.org/datmo/datmo)
+The testing done below emulates what is done in the build on [travis](https://travis-ci.org/prodat/prodat)
 ```
 $ pip install pytest pytest-cov
 $ pip install coveralls
-$ export TEST_DATMO_DIR="/mydir" # Must be an absolute path
+$ export TEST_prodat_DIR="/mydir" # Must be an absolute path
 $ export LOGGING_LEVEL=DEBUG # sets logging level to debug for tests
-$ python -m pytest --cov-config .coveragerc --cov=datmo
+$ python -m pytest --cov-config .coveragerc --cov=prodat
 ```
 
 If you run into issues with testing on docker, you might want to clean up your open docker containers 
@@ -87,10 +87,10 @@ If you're using Visual Studio Code and want to run `yapf -i [filename]` on save,
 ```
 
 ## Upload to PyPi
-Versions of datmo are uploaded to [PyPI](https://pypi.org/project/datmo/) with the following steps. NOTE:
+Versions of prodat are uploaded to [PyPI](https://pypi.org/project/prodat/) with the following steps. NOTE:
 only those with credentials for the PyPI website will be able to upload new versions. 
 
-1) Ensure the `VERSION` file in the `datmo/` module is updated to the desired version to upload 
+1) Ensure the `VERSION` file in the `prodat/` module is updated to the desired version to upload 
 (must be later than the previous version on PyPI based on semver)
 2) Run the following commands
 

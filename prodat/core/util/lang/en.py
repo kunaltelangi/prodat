@@ -30,9 +30,9 @@ MESSAGES = {
             "Automatically opens http://localhost:8787 to login to rstudio,"
             "enter username: rstudio and password: rstudio",
         "cli.project.pull":
-            "Pulling information from the Datmo project url and adding it to local...",
+            "Pulling information from the prodat project url and adding it to local...",
         "cli.project.update":
-            "Update Datmo project",
+            "Update prodat project",
         "cli.project.cleanup":
             "Cleaning up project {name} @ ({path}) ",
         "cli.project.cleanup.success":
@@ -43,9 +43,9 @@ MESSAGES = {
             u'\u274c' + "  Your changes have been aborted!",
         "cli.general.success":
             u'\u2713' +
-            " You have successfully re-initialized your local Datmo project here %s",
+            " You have successfully re-initialized your local prodat project here %s",
         "cli.general.project.create":
-            "Creating a new Datmo project",
+            "Creating a new prodat project",
         "cli.general.str.test":
             "%s",
         "cli.general.dict.test":
@@ -105,7 +105,7 @@ MESSAGES = {
         "controller.general.environment.failed":
             "Environment driver not connected",
         "controller.project.cleanup.not_init":
-            "No valid datmo project was detected",
+            "No valid prodat project was detected",
         "controller.project.cleanup.environment":
             "Error cleaning up project environment",
         "controller.project.cleanup.code":
@@ -129,7 +129,7 @@ MESSAGES = {
         "exception.validationfailed":
             "Validation failed: %s",
         "general.project.dne":
-            "datmo project structure not found in current directory. Run `datmo init` to initialize",
+            "prodat project structure not found in current directory. Run `prodat init` to initialize",
         "general.environment.docker.na":
             "Docker daemon is not initialized. This command cannot be run. Please start Docker and try again.",
         "sdk.snapshot.create.run.args":
@@ -188,12 +188,12 @@ MESSAGES = {
             "Error in git: %s",
         "controller.code.driver.git.__init__.gitversion":
             "Git version must be later than 1.9.7. Current version: %s",
-        "controller.code.driver.git.__init__.datmo":
-            "Datmo folder exists in work tree. Remove and retry",
+        "controller.code.driver.git.__init__.prodat":
+            "prodat folder exists in work tree. Remove and retry",
         "controller.code.driver.git.init":
             "Error in git: %s",
         "controller.code.driver.git.init.file":
-            "Error inadding datmo refs and files: %s",
+            "Error inadding prodat refs and files: %s",
         "controller.code.driver.git._parse_git_url.url":
             "Url not valid: %s",
         "controller.code.driver.git._parse_git_url.access":
@@ -235,9 +235,9 @@ MESSAGES = {
         "controller.code.driver.git.ensure_gitignore_exists":
             "Error in ensuring gitignore: %s",
         "controller.code.driver.git.ensure_code_refs_dir":
-            "Error in ensuring datmo code refs dir: %s",
+            "Error in ensuring prodat code refs dir: %s",
         "controller.code.driver.git.delete_code_refs_dir":
-            "Error in deleting datmo code refs dir: %s",
+            "Error in deleting prodat code refs dir: %s",
         "controller.code.driver.git.delete_ref":
             "Commit ref does not exist",
         "controller.code.driver.git.push_ref":
@@ -321,7 +321,7 @@ MESSAGES = {
         "controller.file.driver.local.copyfile.dst":
             "Destination directory path is not a valid directory: %s",
         "controller.file.driver.local.init":
-            "Failed to ensure datmo file structure: %s",
+            "Failed to ensure prodat file structure: %s",
         "controller.file.driver.local.get":
             "Path specified does not exist: %s",
         "controller.file.driver.local.delete":
@@ -398,19 +398,19 @@ MESSAGES = {
         "cli.project.init.description":
             "Enter description for the project",
         "cli.project.init.git":
-            "Enter remote git url for the Datmo project",
+            "Enter remote git url for the prodat project",
         "cli.general.confirm":
             "Is it okay?",
         "cli.project.cleanup.confirm":
-            "Are you sure you want to delete all datmo project information? "
+            "Are you sure you want to delete all prodat project information? "
             "If none found, no changes will be made [yN]",
         "cli.project.environment.setup":
             "Would you like to setup the environment? [yN]",
     },
     "argparser": {
-        "cli.datmo.usage":
+        "cli.prodat.usage":
             """
-Datmo is a command line utility to enable tracking of data science projects.
+prodat is a command line utility to enable tracking of data science projects.
 It uses many of the tools you are already familiar with and combines them into a snapshot
 which allows you to keep track of 5 components at once
 
@@ -424,7 +424,7 @@ which allows you to keep track of 5 components at once
             """""",
         "cli.snapshot.description":
             """ 
-Datmo snapshots allow you to save the state of your model and experiments
+prodat snapshots allow you to save the state of your model and experiments
 by keeping track of your source code, environment, configuration, metrics
 and large files.
             """,

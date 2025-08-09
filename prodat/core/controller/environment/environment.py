@@ -1,15 +1,15 @@
 import os
 import shutil
 
-from datmo.core.controller.base import BaseController
-from datmo.core.controller.file.file_collection import FileCollectionController
-from datmo.core.entity.environment import Environment
-from datmo.core.util.i18n import get as __
-from datmo.core.util.validation import validate
-from datmo.core.util.spinner import Spinner
-from datmo.core.util.json_store import JSONStore
-from datmo.core.util.misc_functions import get_datmo_temp_path, list_all_filepaths
-from datmo.core.util.exceptions import PathDoesNotExist, RequiredArgumentMissing, TooManyArgumentsFound,\
+from prodat.core.controller.base import BaseController
+from prodat.core.controller.file.file_collection import FileCollectionController
+from prodat.core.entity.environment import Environment
+from prodat.core.util.i18n import get as __
+from prodat.core.util.validation import validate
+from prodat.core.util.spinner import Spinner
+from prodat.core.util.json_store import JSONStore
+from prodat.core.util.misc_functions import get_prodat_temp_path, list_all_filepaths
+from prodat.core.util.exceptions import PathDoesNotExist, RequiredArgumentMissing, TooManyArgumentsFound,\
     EnvironmentNotInitialized, UnstagedChanges, ArgumentError, EnvironmentDoesNotExist, ProjectNotInitialized
 
 class EnvironmentController(BaseController):
@@ -132,7 +132,7 @@ class EnvironmentController(BaseController):
                 name = "%s:%s" % (environment_framework, environment_type)
         create_dict = {
             "name": name,
-            "description": "supported environment created by datmo"
+            "description": "supported environment created by prodat"
         }
         return self.create(create_dict, save_hardware_file=save_hardware_file)
 
@@ -192,7 +192,7 @@ class EnvironmentController(BaseController):
         validate("create_environment", dictionary)
 
         # Create temp environment folder
-        _temp_env_dir = get_datmo_temp_path(self.home)
+        _temp_env_dir = get_prodat_temp_path(self.home)
         # Step 1: Populate a path list from the user inputs in a format compatible
         # with the input of the File Collection create function
         paths = []
@@ -293,8 +293,8 @@ class EnvironmentController(BaseController):
         # Add in files for that environment id
         environment_definition_path = os.path.join(self.home,
                                                    file_collection_obj.path)
-        # Copy to temp folder and remove files that are datmo specific
-        _temp_env_dir = get_datmo_temp_path(self.home)
+        # Copy to temp folder and remove files that are prodat specific
+        _temp_env_dir = get_prodat_temp_path(self.home)
         self.file_driver.copytree(environment_definition_path, _temp_env_dir)
         # get definition filepath for the temp folder
         environment_definition_filepath = os.path.join(
@@ -465,7 +465,7 @@ class EnvironmentController(BaseController):
                 term=match_string, force=True)
         if all:
             # Stop all tasks associated within the enclosed project
-            all_match_string = "datmo-task-" + self.model.id
+            all_match_string = "prodat-task-" + self.model.id
             stop_success = self.environment_driver.stop_remove_containers_by_term(
                 term=all_match_string, force=True)
         return stop_success
@@ -580,10 +580,10 @@ class EnvironmentController(BaseController):
             get_by_id(environment_obj.file_collection_id)
         environment_definition_path = os.path.join(self.home,
                                                    file_collection_obj.path)
-        # Copy to temp folder and remove files that are datmo specific
-        _temp_env_dir = get_datmo_temp_path(self.home)
+        # Copy to temp folder and remove files that are prodat specific
+        _temp_env_dir = get_prodat_temp_path(self.home)
         self.file_driver.copytree(environment_definition_path, _temp_env_dir)
-        for filename in self.environment_driver.get_datmo_definition_filenames(
+        for filename in self.environment_driver.get_prodat_definition_filenames(
         ):
             os.remove(os.path.join(_temp_env_dir, filename))
         # Copy from temp folder to project environment directory
@@ -597,7 +597,7 @@ class EnvironmentController(BaseController):
                                       paths,
                                       directory,
                                       save_hardware_file=True):
-        """Setup compatible environment from user paths. Creates the necessary datmo files if
+        """Setup compatible environment from user paths. Creates the necessary prodat files if
         they are not already present
 
         Parameters
@@ -663,7 +663,7 @@ class EnvironmentController(BaseController):
             ])
 
         # Create a temp dir to save any additional files necessary
-        _temp_dir = get_datmo_temp_path(self.home)
+        _temp_dir = get_prodat_temp_path(self.home)
 
         # Setup compatible environment and create add paths
         paths = self._setup_compatible_environment(
@@ -676,7 +676,7 @@ class EnvironmentController(BaseController):
             save_hardware_file=save_hardware_file)
 
         # Create new temp directory
-        _temp_dir_2 = get_datmo_temp_path(self.home)
+        _temp_dir_2 = get_prodat_temp_path(self.home)
 
         # Hash the paths of the environment with a different temp dir
         dirhash = self.file_driver.calculate_hash_paths(paths, _temp_dir_2)

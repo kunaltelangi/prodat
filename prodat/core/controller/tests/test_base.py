@@ -6,24 +6,24 @@ import os
 import tempfile
 import platform
 
-from datmo.config import Config
-from datmo.core.controller.base import BaseController
-from datmo.core.controller.project import ProjectController
-from datmo.core.controller.code.driver.file import FileCodeDriver
-from datmo.core.controller.file.driver.local import LocalFileDriver
-from datmo.core.controller.environment.driver.dockerenv import DockerEnvironmentDriver
-from datmo.core.entity.model import Model
-from datmo.core.util.exceptions import  \
+from prodat.config import Config
+from prodat.core.controller.base import BaseController
+from prodat.core.controller.project import ProjectController
+from prodat.core.controller.code.driver.file import FileCodeDriver
+from prodat.core.controller.file.driver.local import LocalFileDriver
+from prodat.core.controller.environment.driver.dockerenv import DockerEnvironmentDriver
+from prodat.core.entity.model import Model
+from prodat.core.util.exceptions import  \
     InvalidProjectPath, DALNotInitialized
-from datmo.core.util.misc_functions import pytest_docker_environment_failed_instantiation
+from prodat.core.util.misc_functions import pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestBaseController():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         Config().set_home(self.temp_dir)
         self.base_controller = BaseController()
         self.project_controller = ProjectController()
@@ -47,7 +47,7 @@ class TestBaseController():
     def test_instantiation(self):
         assert self.base_controller != None
 
-    def test_datmo_model(self):
+    def test_prodat_model(self):
         # Test failure case
         assert self.base_controller.model == None
 
@@ -69,7 +69,7 @@ class TestBaseController():
         assert self.base_controller.file_driver.type == "local"
         assert self.base_controller.file_driver.root == self.base_controller.home
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_default_environment_driver_not_initialized(self):
         assert self.base_controller.environment_driver != None
         assert self.base_controller.environment_driver.type == "docker"
@@ -97,7 +97,7 @@ class TestBaseController():
         assert self.base_controller.model != None
 
     def test_default_config_loader(self):
-        # TODO: Test all Datmo default settings
+        # TODO: Test all prodat default settings
         assert self.base_controller.config_loader("controller.code.driver")["constructor"] == \
                FileCodeDriver
         assert self.base_controller.config_loader("controller.file.driver")["constructor"] == \

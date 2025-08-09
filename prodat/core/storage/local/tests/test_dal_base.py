@@ -6,18 +6,18 @@ import os
 import tempfile
 import platform
 
-from datmo.core.storage.driver.blitzdb_dal_driver import BlitzDBDALDriver
-from datmo.core.storage.local.dal import LocalDAL
-from datmo.core.util.exceptions import EntityNotFound, EntityCollectionNotFound
+from prodat.core.storage.driver.blitzdb_dal_driver import BlitzDBDALDriver
+from prodat.core.storage.local.dal import LocalDAL
+from prodat.core.util.exceptions import EntityNotFound, EntityCollectionNotFound
 
 class TestLocalDAL():
     def setup_class(self):
         # provide mountable tmp directory for docker
         tempfile.tempdir = "/tmp" if not platform.system(
         ) == "Windows" else None
-        test_datmo_dir = os.environ.get('TEST_DATMO_DIR',
+        test_prodat_dir = os.environ.get('TEST_prodat_DIR',
                                         tempfile.gettempdir())
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         self.driver_type = "blitzdb"
         self.driver_options = {
             "driver_type": "file",

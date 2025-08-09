@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from datmo.core.util.misc_functions import prettify_datetime, format_table
+from prodat.core.util.misc_functions import prettify_datetime, format_table
 
 class Task():
     """Task is an entity object to represent an experiment run. A snapshot is taken before and after the task

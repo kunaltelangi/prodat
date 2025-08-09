@@ -1,8 +1,8 @@
-from datmo.core.util.i18n import get as __
-from datmo.cli.command.project import ProjectCommand
-from datmo.core.util.misc_functions import mutually_exclusive
-from datmo.cli.driver.helper import Helper
-from datmo.core.controller.task import TaskController
+from prodat.core.util.i18n import get as __
+from prodat.cli.command.project import ProjectCommand
+from prodat.core.util.misc_functions import mutually_exclusive
+from prodat.cli.driver.helper import Helper
+from prodat.core.controller.task import TaskController
 
 class WorkspaceCommand(ProjectCommand):
     def __init__(self, cli_helper):

@@ -1,6 +1,6 @@
 import time
 
-from datmo.core.util.spinner import Spinner
+from prodat.core.util.spinner import Spinner
 
 def test_spinner():
     s = Spinner()

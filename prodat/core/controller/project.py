@@ -1,16 +1,16 @@
 import os
 
-from datmo.config import Config
-from datmo.core.util.validation import validate
-from datmo.core.util.i18n import get as __
-from datmo.core.controller.base import BaseController
-from datmo.core.controller.code.code import CodeController
-from datmo.core.controller.environment.environment import EnvironmentController
-from datmo.core.controller.file.file_collection import FileCollectionController
-from datmo.core.controller.snapshot import SnapshotController
-from datmo.core.entity.model import Model
-from datmo.core.util.json_store import JSONStore
-from datmo.core.util.exceptions import (ProjectNotInitialized,
+from prodat.config import Config
+from prodat.core.util.validation import validate
+from prodat.core.util.i18n import get as __
+from prodat.core.controller.base import BaseController
+from prodat.core.controller.code.code import CodeController
+from prodat.core.controller.environment.environment import EnvironmentController
+from prodat.core.controller.file.file_collection import FileCollectionController
+from prodat.core.controller.snapshot import SnapshotController
+from prodat.core.entity.model import Model
+from prodat.core.util.json_store import JSONStore
+from prodat.core.util.exceptions import (ProjectNotInitialized,
                                         EnvironmentConnectFailed, FileIOError,
                                         UnstagedChanges, PathDoesNotExist)
 
@@ -23,7 +23,7 @@ class ProjectController(BaseController):
     init(name, description)
         Initialize the project repository as a new model or update the existing project
     cleanup()
-        Remove all datmo references from the current repository. NOTE: THIS WILL DELETE ALL DATMO WORK
+        Remove all prodat references from the current repository. NOTE: THIS WILL DELETE ALL prodat WORK
     status()
         Give the user a picture of the status of the project, snapshots, and tasks
     """
@@ -77,7 +77,7 @@ class ProjectController(BaseController):
             # Initialize the config JSON store
             self.config_store = JSONStore(
                 os.path.join(self.home,
-                             Config().datmo_directory_name, ".config"))
+                             Config().prodat_directory_name, ".config"))
 
             # Create model if new else update
             if is_new_model:
@@ -103,7 +103,7 @@ class ProjectController(BaseController):
                     __("warn", "controller.general.environment.failed"))
 
             # Build the initial default Environment (NOT NECESSARY)
-            # self.environment_driver.build_image(tag="datmo-" + \
+            # self.environment_driver.build_image(tag="prodat-" + \
             #                                  self.model.name)
             return True
         except Exception:
@@ -135,17 +135,17 @@ class ProjectController(BaseController):
         if not self.is_initialized:
             self.logger.warning(
                 __("warn", "controller.project.cleanup.not_init"))
-        # Remove Datmo environment_driver references, give warning if error
+        # Remove prodat environment_driver references, give warning if error
         try:
             # Obtain image id before cleaning up if exists
-            images = self.environment_driver.list_images(name="datmo-" + \
+            images = self.environment_driver.list_images(name="prodat-" + \
                                                               self.model.name)
             image_id = images[0].id if images else None
         except Exception:
             self.logger.warning(
                 __("warn", "controller.project.cleanup.environment"))
 
-        # Remove Datmo code_driver references, give warning if error
+        # Remove prodat code_driver references, give warning if error
         try:
             if self.code_driver.is_initialized:
                 for ref in self.code_driver.list_refs():
@@ -153,8 +153,8 @@ class ProjectController(BaseController):
         except Exception:
             self.logger.warning(__("warn", "controller.project.cleanup.code"))
         try:
-            # Remove Hidden Datmo file structure, give warning if error
-            self.file_driver.delete_hidden_datmo_file_structure()
+            # Remove Hidden prodat file structure, give warning if error
+            self.file_driver.delete_hidden_prodat_file_structure()
         except (FileIOError, PathDoesNotExist):
             self.logger.warning(__("warn", "controller.project.cleanup.files"))
 
@@ -182,12 +182,12 @@ class ProjectController(BaseController):
         -------
         status_dict : dict
             dictionary with project metadata and config
-        current_snapshot : datmo.core.entity.snapshot.Snapshot
+        current_snapshot : prodat.core.entity.snapshot.Snapshot
             snapshot object of the current state of the repo if present else None
-        latest_snapshot_user_generated : datmo.core.entity.snapshot.Snapshot
+        latest_snapshot_user_generated : prodat.core.entity.snapshot.Snapshot
             snapshot object of the latest snapshot generated by the user if present else None
-        latest_snapshot_auto_generated : datmo.core.entity.snapshot.Snapshot
-            snapshot object of the latest snapshot generated automatically by datmo if present else None
+        latest_snapshot_auto_generated : prodat.core.entity.snapshot.Snapshot
+            snapshot object of the latest snapshot generated automatically by prodat if present else None
         unstaged_code : bool
             True if code has unstaged changes
         unstaged_environment : bool
@@ -214,7 +214,7 @@ class ProjectController(BaseController):
         latest_snapshot_user_generated = descending_snapshots[
             0] if descending_snapshots else None
 
-        # Show the latest snapshot generated automatically by datmo
+        # Show the latest snapshot generated automatically by prodat
         descending_snapshots = self.dal.snapshot.query(
             {
                 "visible": False

@@ -3,7 +3,7 @@ Tests for DALDriver
 """
 
 import unittest
-from datmo.core.storage.driver import DALDriver
+from prodat.core.storage.driver import DALDriver
 
 class TestDALDriver(unittest.TestCase):
     def test_init(self):

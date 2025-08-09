@@ -6,8 +6,8 @@ try:
 except NameError:
     to_unicode = str
 
-from datmo.core.util.validation import validate
-from datmo.core.util.exceptions import ValidationFailed, ValidationSchemaMissing
+from prodat.core.util.validation import validate
+from prodat.core.util.exceptions import ValidationFailed, ValidationSchemaMissing
 
 class TestJSONStore():
     def test_validate_success(self):

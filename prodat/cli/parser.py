@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
-from datmo.core.util.i18n import get as __
-from datmo.cli.driver.parser import Parser
+from prodat.core.util.i18n import get as __
+from prodat.cli.driver.parser import Parser
 
-def get_datmo_parser():
-    parser = Parser(prog="datmo")
+def get_prodat_parser():
+    parser = Parser(prog="prodat")
 
     subparsers = parser.add_subparsers(title="commands", dest="command")
 
@@ -20,7 +20,7 @@ def get_datmo_parser():
         action="store_true",
         help="boolean if you want to run init without prompts")
 
-    version_parser = subparsers.add_parser("version", help="datmo version")
+    version_parser = subparsers.add_parser("version", help="prodat version")
 
     status_parser = subparsers.add_parser("status", help="project status")
 
@@ -30,7 +30,7 @@ def get_datmo_parser():
         "dashboard", help="start dashboard")
 
     configure_parser = subparsers.add_parser(
-        "configure", help="configure datmo")
+        "configure", help="configure prodat")
 
     # Notebook
     notebook_parser = subparsers.add_parser(
@@ -295,7 +295,7 @@ def get_datmo_parser():
         "-a",
         dest="all",
         action="store_true",
-        help="stop all datmo runs")
+        help="stop all prodat runs")
 
     # Delete runs
     delete_run_parser = subparsers.add_parser("delete", help="delete runs")

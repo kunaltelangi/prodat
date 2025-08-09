@@ -1,7 +1,7 @@
 """
 Tests for Model
 """
-from datmo.core.entity.model import Model
+from prodat.core.entity.model import Model
 
 class TestModel():
     def setup_class(self):

@@ -5,7 +5,7 @@ project_root = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(project_root, 'README.md')) as file:
     long_description = file.read()
 
-with open(os.path.join(project_root, 'datmo', 'VERSION')) as file:
+with open(os.path.join(project_root, 'prodat', 'VERSION')) as file:
     __version__ = file.read()
 
 # Modern Python 3.7+ dependencies
@@ -48,13 +48,13 @@ prerequisites = [
 ]
 
 setup(
-    name='datmo',
+    name='prodat',
     version=__version__,
-    author='datmo developers',
-    author_email='developer@datmo.com',
+    author='prodat developers',
+    author_email='developer@prodat.com',
     packages=find_packages(
         exclude=["templates.*", "*.tests", "*.tests.*", "tests.*", "tests"]),
-    url="https://github.com/datmo/datmo",
+    url="https://github.com/prodat/prodat",
     license='See LICENSE.txt',
     description='Open source model tracking tool for developers',
     long_description=long_description,
@@ -62,7 +62,7 @@ setup(
     install_requires=prerequisites,
     tests_require=["pytest>=7.0.0"],
     python_requires='>=3.7',
-    entry_points={'console_scripts': ['datmo = datmo.cli.main:main']},
+    entry_points={'console_scripts': ['prodat = prodat.cli.main:main']},
     include_package_data=True,
     classifiers=[
         'Development Status :: 3 - Alpha',

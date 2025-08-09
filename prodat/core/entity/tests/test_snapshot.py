@@ -1,7 +1,7 @@
 """
 Tests for Snapshot
 """
-from datmo.core.entity.snapshot import Snapshot
+from prodat.core.entity.snapshot import Snapshot
 
 class TestSnapshot():
     def setup_class(self):

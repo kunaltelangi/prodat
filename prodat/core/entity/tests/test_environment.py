@@ -1,7 +1,7 @@
 """
 Tests for Environment
 """
-from datmo.core.entity.environment import Environment
+from prodat.core.entity.environment import Environment
 
 class TestEnvironment():
     def setup_method(self):

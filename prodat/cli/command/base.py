@@ -1,19 +1,19 @@
 #!/usr/bin/python
 
-from datmo.config import Config
-from datmo.core.util.i18n import get as __
-from datmo.core.util.exceptions import ClassMethodNotFound, PathDoesNotExist
-from datmo.cli.parser import get_datmo_parser
-from datmo.core.controller.task import TaskController
-from datmo.core.util.logger import DatmoLogger
-from datmo.core.util.misc_functions import parameterized, parse_paths
+from prodat.config import Config
+from prodat.core.util.i18n import get as __
+from prodat.core.util.exceptions import ClassMethodNotFound, PathDoesNotExist
+from prodat.cli.parser import get_prodat_parser
+from prodat.core.controller.task import TaskController
+from prodat.core.util.logger import prodatLogger
+from prodat.core.util.misc_functions import parameterized, parse_paths
 
 class BaseCommand(object):
     def __init__(self, cli_helper):
         self.home = Config().home
         self.cli_helper = cli_helper
-        self.logger = DatmoLogger.get_logger(__name__)
-        self.parser = get_datmo_parser()
+        self.logger = prodatLogger.get_logger(__name__)
+        self.parser = get_prodat_parser()
 
     def parse(self, args):
         try:
@@ -62,7 +62,7 @@ class BaseCommand(object):
         if self.args is True: return True
 
         if getattr(self.args, "command") is None:
-            self.args.command = "datmo"
+            self.args.command = "prodat"
 
         command_args = vars(self.args).copy()
         # use command name if it exists,

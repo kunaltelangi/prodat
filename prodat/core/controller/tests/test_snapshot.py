@@ -22,31 +22,31 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.config import Config
-from datmo.core.controller.project import ProjectController
-from datmo.core.controller.environment.environment import EnvironmentController
-from datmo.core.controller.task import TaskController
-from datmo.core.controller.snapshot import SnapshotController
-from datmo.core.entity.snapshot import Snapshot
-from datmo.core.util.exceptions import (
+from prodat.config import Config
+from prodat.core.controller.project import ProjectController
+from prodat.core.controller.environment.environment import EnvironmentController
+from prodat.core.controller.task import TaskController
+from prodat.core.controller.snapshot import SnapshotController
+from prodat.core.entity.snapshot import Snapshot
+from prodat.core.util.exceptions import (
     EntityNotFound, RequiredArgumentMissing, TaskNotComplete,
     InvalidArgumentType, ProjectNotInitialized, InvalidProjectPath,
     DoesNotExist, UnstagedChanges)
-from datmo.core.util.misc_functions import check_docker_inactive, pytest_docker_environment_failed_instantiation
+from prodat.core.util.misc_functions import check_docker_inactive, pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestSnapshotController():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         Config().set_home(self.temp_dir)
         self.environment_ids = []
 
     def teardown_method(self):
-        if not check_docker_inactive(test_datmo_dir,
-                                     Config().datmo_directory_name):
+        if not check_docker_inactive(test_prodat_dir,
+                                     Config().prodat_directory_name):
             self.__setup()
             self.environment_controller = EnvironmentController()
             for env_id in list(set(self.environment_ids)):
@@ -322,7 +322,7 @@ class TestSnapshotController():
         _, files_directory_name = os.path.split(
             self.project_controller.file_driver.files_directory)
         files_directory_relative_path = os.path.join(
-            self.project_controller.file_driver.datmo_directory_name,
+            self.project_controller.file_driver.prodat_directory_name,
             files_directory_name)
         self.snapshot_controller.file_driver.create(
             os.path.join(files_directory_relative_path, "dirpath1"),
@@ -386,7 +386,7 @@ class TestSnapshotController():
         _, files_directory_name = os.path.split(
             self.project_controller.file_driver.files_directory)
         files_directory_relative_path = os.path.join(
-            self.project_controller.file_driver.datmo_directory_name,
+            self.project_controller.file_driver.prodat_directory_name,
             files_directory_name)
         self.snapshot_controller.file_driver.create(
             os.path.join(files_directory_relative_path, "dirpath1"),
@@ -435,7 +435,7 @@ class TestSnapshotController():
         _, files_directory_name = os.path.split(
             self.project_controller.file_driver.files_directory)
         files_directory_relative_path = os.path.join(
-            self.project_controller.file_driver.datmo_directory_name,
+            self.project_controller.file_driver.prodat_directory_name,
             files_directory_name)
         self.snapshot_controller.file_driver.create(
             os.path.join(files_directory_relative_path, "dirpath1"),
@@ -471,7 +471,7 @@ class TestSnapshotController():
         assert snapshot_obj_6.config == {"foo": "bar"}
         assert snapshot_obj_6.stats == {"foo": "bar"}
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_create_from_task(self):
         self.__setup()
         # 0) Test if fails with TaskNotComplete error
@@ -604,7 +604,7 @@ class TestSnapshotController():
         _, files_directory_name = os.path.split(
             self.project_controller.file_driver.files_directory)
         files_directory_relative_path = os.path.join(
-            self.project_controller.file_driver.datmo_directory_name,
+            self.project_controller.file_driver.prodat_directory_name,
             files_directory_name)
         self.snapshot_controller.file_driver.create(
             os.path.join(files_directory_relative_path, "dirpath1"),
@@ -877,7 +877,7 @@ class TestSnapshotController():
         for item in result:
             assert isinstance(item, TextIOWrapper)
             assert item.mode == "r"
-        assert os.path.join(self.task_controller.home, ".datmo", "collections",
+        assert os.path.join(self.task_controller.home, ".prodat", "collections",
                             file_collection_obj.filehash,
                             "filepath1") in file_names
 
@@ -887,7 +887,7 @@ class TestSnapshotController():
         for item in result:
             assert isinstance(item, TextIOWrapper)
             assert item.mode == "a"
-        assert os.path.join(self.task_controller.home, ".datmo", "collections",
+        assert os.path.join(self.task_controller.home, ".prodat", "collections",
                             file_collection_obj.filehash,
                             "filepath1") in file_names
 

@@ -3,19 +3,19 @@
 import logging
 import os
 import datetime
-from datmo.core.util.logger import DatmoLogger
-from datmo.core.util.json_store import JSONStore
-from datmo.core.util.misc_functions import parameterized
+from prodat.core.util.logger import prodatLogger
+from prodat.core.util.json_store import JSONStore
+from prodat.core.util.misc_functions import parameterized
 
 class Config(object):
-    """Datmo Config properties
+    """prodat Config properties
 
     Parameters
     ----------
     home : str
         project home directory
     damto_directory_name : str
-        datmo directory name
+        prodat directory name
     remote_credentials : tuple
 
     Returns
@@ -29,11 +29,11 @@ class Config(object):
     class __InternalConfig:
         def __init__(self):
             self._home = None
-            self.datmo_directory_name = ".datmo"
+            self.prodat_directory_name = ".prodat"
             self.logging_level = logging.DEBUG
-            DatmoLogger.get_logger(__name__).info("initializing")
+            prodatLogger.get_logger(__name__).info("initializing")
             self.data_cache = JSONStore(
-                os.path.join(os.path.expanduser("~"), ".datmo", "cache.json"))
+                os.path.join(os.path.expanduser("~"), ".prodat", "cache.json"))
             self.docker_cli = '/usr/bin/docker'
 
         @property
@@ -49,33 +49,33 @@ class Config(object):
             -------
             MASTER_SERVER_IP : str
                 return if present else None
-            DATMO_API_KEY : str
+            prodat_API_KEY : str
                 return if present else None
             END_POINT : str
                 return if present else None
             """
-            # 1) Load from the environment if datmo config not already saved globally
+            # 1) Load from the environment if prodat config not already saved globally
             MASTER_SERVER_IP = os.environ.get('MASTER_SERVER_IP', None)
-            DATMO_API_KEY = os.environ.get('DATMO_API_KEY', None)
+            prodat_API_KEY = os.environ.get('prodat_API_KEY', None)
 
-            # 2) loading the datmo config if present
-            datmo_config_filepath = os.path.join(
-                os.path.expanduser("~"), ".datmo", "config")
-            if os.path.isfile(datmo_config_filepath):
-                datmo_config = JSONStore(datmo_config_filepath)
-                config_dict = datmo_config.to_dict()
+            # 2) loading the prodat config if present
+            prodat_config_filepath = os.path.join(
+                os.path.expanduser("~"), ".prodat", "config")
+            if os.path.isfile(prodat_config_filepath):
+                prodat_config = JSONStore(prodat_config_filepath)
+                config_dict = prodat_config.to_dict()
                 if MASTER_SERVER_IP is None:
                     MASTER_SERVER_IP = config_dict.get('MASTER_SERVER_IP',
                                                        None)
-                if DATMO_API_KEY is None:
-                    DATMO_API_KEY = config_dict.get('DATMO_API_KEY', None)
+                if prodat_API_KEY is None:
+                    prodat_API_KEY = config_dict.get('prodat_API_KEY', None)
 
             if MASTER_SERVER_IP:
                 END_POINT = 'http://' + MASTER_SERVER_IP + ':2083/api/v1'
             else:
                 END_POINT = None
 
-            return MASTER_SERVER_IP, DATMO_API_KEY, END_POINT
+            return MASTER_SERVER_IP, prodat_API_KEY, END_POINT
 
         def set_home(self, home_path):
             self._home = home_path

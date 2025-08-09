@@ -1,8 +1,8 @@
 """
 Tests for Run
 """
-from datmo.core.entity.task import Task as CoreTask
-from datmo.core.entity.run import Run
+from prodat.core.entity.task import Task as CoreTask
+from prodat.core.entity.run import Run
 
 class TestRun():
     def setup_class(self):

@@ -7,7 +7,7 @@ class CodeDriver(with_metaclass(ABCMeta, object)):
     Methods
     -------
     create_ref()
-        add remaining files, make a commit and add to datmo ref
+        add remaining files, make a commit and add to prodat ref
     exists_ref()
         check if commit reference exists
     delete_ref()
@@ -45,7 +45,7 @@ class CodeDriver(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def create_ref(self, commit_id=None):
-        """Add remaining files, make a commit and add to datmo ref
+        """Add remaining files, make a commit and add to prodat ref
 
         Parameters
         ----------
@@ -191,7 +191,7 @@ class CodeDriver(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def checkout_ref(self, commit_id):
-        """Checkout commit reference given without affecting the .datmo directory
+        """Checkout commit reference given without affecting the .prodat directory
 
         Parameters
         ----------

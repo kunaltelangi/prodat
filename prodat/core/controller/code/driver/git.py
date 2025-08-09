@@ -21,12 +21,12 @@ except TypeError:
     to_bytes("test")
 from giturlparse import parse
 
-from datmo.core.util.i18n import get as __
-from datmo.core.util.exceptions import (
+from prodat.core.util.i18n import get as __
+from prodat.core.util.exceptions import (
     PathDoesNotExist, GitUrlArgumentError, GitExecutionError, FileIOError,
-    CommitDoesNotExist, CommitFailed, DatmoFolderInWorkTree, UnstagedChanges)
-from datmo.core.controller.code.driver import CodeDriver
-from datmo.config import Config
+    CommitDoesNotExist, CommitFailed, prodatFolderInWorkTree, UnstagedChanges)
+from prodat.core.controller.code.driver import CodeDriver
+from prodat.config import Config
 
 class GitCodeDriver(CodeDriver):
     """
@@ -75,12 +75,12 @@ class GitCodeDriver(CodeDriver):
         self._is_initialized = self.is_initialized
 
         if self._is_initialized:
-            # If initialized ensure .datmo is not in working tree else error
-            if self.exists_datmo_files_in_worktree():
-                raise DatmoFolderInWorkTree(
-                    __("error", "controller.code.driver.git.__init__.datmo"))
-            # If initialized ensure .datmo is ignored (in .git/info/exclude)
-            self.ensure_datmo_files_ignored()
+            # If initialized ensure .prodat is not in working tree else error
+            if self.exists_prodat_files_in_worktree():
+                raise prodatFolderInWorkTree(
+                    __("error", "controller.code.driver.git.__init__.prodat"))
+            # If initialized ensure .prodat is ignored (in .git/info/exclude)
+            self.ensure_prodat_files_ignored()
             # If initialized update remote information
             # if remote_url:
             #     self.remote("set-url", "origin", remote_url)
@@ -92,7 +92,7 @@ class GitCodeDriver(CodeDriver):
     def is_initialized(self):
         if os.path.isdir(os.path.join(self.filepath, ".git")) and \
                 self.exists_code_refs_dir() and \
-                self.exists_datmo_files_ignored():
+                self.exists_prodat_files_ignored():
             self._is_initialized = True
             return self._is_initialized
         self._is_initialized = False
@@ -139,11 +139,11 @@ class GitCodeDriver(CodeDriver):
             raise FileIOError(
                 __("error", "controller.code.driver.git.init.file", str(e)))
         try:
-            datmo_files_ignored_success = self.ensure_datmo_files_ignored()
+            prodat_files_ignored_success = self.ensure_prodat_files_ignored()
         except Exception as e:
             raise FileIOError(
                 __("error", "controller.code.driver.git.init.file", str(e)))
-        return code_refs_success and datmo_files_ignored_success
+        return code_refs_success and prodat_files_ignored_success
 
     # Implemented functions for every CodeDriver
 
@@ -152,7 +152,7 @@ class GitCodeDriver(CodeDriver):
         return self.latest_commit()
 
     def create_ref(self, commit_id=None):
-        """Add remaining files, make a commit and add it to a datmo code ref
+        """Add remaining files, make a commit and add it to a prodat code ref
 
         Parameters
         ----------
@@ -175,9 +175,9 @@ class GitCodeDriver(CodeDriver):
         if not commit_id:
             try:
                 _ = self.latest_commit()
-                message = "auto commit by datmo"
+                message = "auto commit by prodat"
             except Exception:
-                message = "auto initial commit by datmo"
+                message = "auto initial commit by prodat"
             # add files and commit changes on current branch
             self.add("-A")
             _ = self.commit(options=["-m", message])
@@ -193,8 +193,8 @@ class GitCodeDriver(CodeDriver):
             raise CommitDoesNotExist(
                 __("error", "controller.code.driver.git.create_ref.no_commit",
                    commit_id))
-        # git refs for datmo for the latest commit id is created
-        code_ref_path = os.path.join(self.filepath, ".git/refs/datmo/",
+        # git refs for prodat for the latest commit id is created
+        code_ref_path = os.path.join(self.filepath, ".git/refs/prodat/",
                                      commit_id)
         with open(code_ref_path, "wb") as f:
             f.write(to_bytes(commit_id))
@@ -205,7 +205,7 @@ class GitCodeDriver(CodeDriver):
             # Keeping it granular as timestaps in git
             return int(os.path.getmtime(absolute_filepath))
 
-        code_refs_path = os.path.join(self.filepath, ".git/refs/datmo/")
+        code_refs_path = os.path.join(self.filepath, ".git/refs/prodat/")
         sorted_code_refs = sorted(
             [
                 os.path.join(code_refs_path, filename)
@@ -217,7 +217,7 @@ class GitCodeDriver(CodeDriver):
         return filename
 
     def exists_ref(self, commit_id):
-        code_ref_path = os.path.join(self.filepath, ".git/refs/datmo/",
+        code_ref_path = os.path.join(self.filepath, ".git/refs/prodat/",
                                      commit_id)
         if not os.path.isfile(code_ref_path):
             return False
@@ -225,7 +225,7 @@ class GitCodeDriver(CodeDriver):
 
     def delete_ref(self, commit_id):
         self.ensure_code_refs_dir()
-        code_ref_path = os.path.join(self.filepath, ".git/refs/datmo/",
+        code_ref_path = os.path.join(self.filepath, ".git/refs/prodat/",
                                      commit_id)
         if not self.exists_ref(commit_id):
             raise FileIOError(
@@ -235,25 +235,25 @@ class GitCodeDriver(CodeDriver):
 
     def list_refs(self):
         self.ensure_code_refs_dir()
-        code_refs_path = os.path.join(self.filepath, ".git/refs/datmo/")
+        code_refs_path = os.path.join(self.filepath, ".git/refs/prodat/")
         code_refs_list = os.listdir(code_refs_path)
         return code_refs_list
 
-    # Datmo specific remote calls
+    # prodat specific remote calls
     # def push_ref(self, commit_id="*"):
-    #     datmo_ref = "refs/datmo/" + commit_id
-    #     datmo_ref_map = "+" + datmo_ref + ":" + datmo_ref
+    #     prodat_ref = "refs/prodat/" + commit_id
+    #     prodat_ref_map = "+" + prodat_ref + ":" + prodat_ref
     #     try:
-    #         return self.push("origin", name=datmo_ref_map)
+    #         return self.push("origin", name=prodat_ref_map)
     #     except Exception as e:
     #         raise GitExecutionError(
     #             __("error", "controller.code.driver.git.push_ref", str(e)))
     #
     # def fetch_ref(self, commit_id):
     #     try:
-    #         datmo_ref = "refs/datmo/" + commit_id
-    #         datmo_ref_map = "+" + datmo_ref + ":" + datmo_ref
-    #         success, err = self.fetch("origin", datmo_ref_map, option="-fup")
+    #         prodat_ref = "refs/prodat/" + commit_id
+    #         prodat_ref_map = "+" + prodat_ref + ":" + prodat_ref
+    #         success, err = self.fetch("origin", prodat_ref_map, option="-fup")
     #         if not success:
     #             raise GitExecutionError(
     #                 __("error", "controller.code.driver.git.fetch_ref",
@@ -267,18 +267,18 @@ class GitCodeDriver(CodeDriver):
     def checkout_ref(self, commit_id):
         try:
             # Run checkout for the specific ref as usual
-            datmo_ref = "refs/datmo/" + commit_id
-            checkout_result = self.checkout(datmo_ref)
+            prodat_ref = "refs/prodat/" + commit_id
+            checkout_result = self.checkout(prodat_ref)
             return checkout_result
         except Exception as e:
             raise GitExecutionError(
                 __("error", "controller.code.driver.git.checkout_ref",
                    (commit_id, str(e))))
 
-    def exists_datmo_files_ignored(self):
+    def exists_prodat_files_ignored(self):
         exclude_file = os.path.join(self.filepath, ".git/info/exclude")
         try:
-            if ".datmo" not in open(exclude_file, "r").read():
+            if ".prodat" not in open(exclude_file, "r").read():
                 return False
             else:
                 return True
@@ -287,23 +287,23 @@ class GitCodeDriver(CodeDriver):
                 __("error", "controller.code.driver.git.ensure_code_refs_dir",
                    str(e)))
 
-    def ensure_datmo_files_ignored(self):
+    def ensure_prodat_files_ignored(self):
         exclude_file = os.path.join(self.filepath, ".git/info/exclude")
         try:
-            if not self.exists_datmo_files_ignored():
+            if not self.exists_prodat_files_ignored():
                 with open(exclude_file, "ab") as f:
                     f.write(
-                        to_bytes("%s.datmo/*%s" % (os.linesep, os.linesep)))
+                        to_bytes("%s.prodat/*%s" % (os.linesep, os.linesep)))
         except Exception as e:
             raise FileIOError(
                 __("error", "controller.code.driver.git.ensure_code_refs_dir",
                    str(e)))
         return True
 
-    def exists_datmo_files_in_worktree(self):
+    def exists_prodat_files_in_worktree(self):
         try:
             process = subprocess.Popen(
-                [self.execpath, "ls-files", "|", "grep", ".datmo"],
+                [self.execpath, "ls-files", "|", "grep", ".prodat"],
                 cwd=self.filepath,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
@@ -550,7 +550,7 @@ class GitCodeDriver(CodeDriver):
     #             __("error", "controller.code.driver.git.stash_save", str(e)))
     #     return True
     #
-    # def stash_list(self, regex="datmo"):
+    # def stash_list(self, regex="prodat"):
     #     # TODO: Test this function
     #     try:
     #         process = subprocess.Popen(
@@ -806,16 +806,16 @@ class GitCodeDriver(CodeDriver):
     # def pull(self):
     #     pass
 
-    # Datmo Code Refs
+    # prodat Code Refs
 
     def exists_code_refs_dir(self):
-        dir = ".git/refs/datmo"
+        dir = ".git/refs/prodat"
         if not os.path.isdir(os.path.join(self.filepath, dir)):
             return False
         return True
 
     def ensure_code_refs_dir(self):
-        dir = ".git/refs/datmo"
+        dir = ".git/refs/prodat"
         try:
             if not os.path.isdir(os.path.join(self.filepath, dir)):
                 os.makedirs(os.path.join(self.filepath, dir))
@@ -826,7 +826,7 @@ class GitCodeDriver(CodeDriver):
         return True
 
     def delete_code_refs_dir(self):
-        dir = ".git/refs/datmo"
+        dir = ".git/refs/prodat"
         dir_path = os.path.join(self.filepath, dir)
         try:
             if os.path.isdir(dir_path):

@@ -23,28 +23,28 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.config import Config
-from datmo.core.controller.project import ProjectController
-from datmo.core.controller.environment.environment import EnvironmentController
-from datmo.core.controller.task import TaskController
-from datmo.core.entity.task import Task
-from datmo.core.util.exceptions import EntityNotFound, TaskRunError, \
+from prodat.config import Config
+from prodat.core.controller.project import ProjectController
+from prodat.core.controller.environment.environment import EnvironmentController
+from prodat.core.controller.task import TaskController
+from prodat.core.entity.task import Task
+from prodat.core.util.exceptions import EntityNotFound, TaskRunError, \
     InvalidArgumentType, RequiredArgumentMissing, ProjectNotInitialized, \
     InvalidProjectPath, TooManyArgumentsFound, DoesNotExist
-from datmo.core.util.misc_functions import check_docker_inactive, pytest_docker_environment_failed_instantiation
+from prodat.core.util.misc_functions import check_docker_inactive, pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestTaskController():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         self.environment_ids = []
 
     def teardown_method(self):
-        if not check_docker_inactive(test_datmo_dir,
-                                     Config().datmo_directory_name):
+        if not check_docker_inactive(test_prodat_dir,
+                                     Config().prodat_directory_name):
             self.__setup()
             self.environment_controller = EnvironmentController()
             for env_id in list(set(self.environment_ids)):
@@ -86,7 +86,7 @@ class TestTaskController():
         assert task_obj.created_at
         assert task_obj.updated_at
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run_helper(self):
         self.__setup()
         # TODO: Try out more options (see below)
@@ -245,7 +245,7 @@ class TestTaskController():
 
         assert failed
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run(self):
         self.__setup()
         # 0) Test failure case without command and without interactive
@@ -720,7 +720,7 @@ class TestTaskController():
         task_obj_returned = self.task_controller.get(task_obj.id)
         assert task_obj == task_obj_returned
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_get_files(self):
         self.__setup()
         # Test failure case
@@ -780,10 +780,10 @@ class TestTaskController():
         for item in result:
             assert isinstance(item, TextIOWrapper)
             assert item.mode == "r"
-        assert os.path.join(self.task_controller.home, ".datmo", "collections",
+        assert os.path.join(self.task_controller.home, ".prodat", "collections",
                             file_collection_obj.filehash,
                             "task.log") in file_names
-        assert os.path.join(self.task_controller.home, ".datmo", "collections",
+        assert os.path.join(self.task_controller.home, ".prodat", "collections",
                             file_collection_obj.filehash,
                             "filepath1") in file_names
 
@@ -794,10 +794,10 @@ class TestTaskController():
         for item in result:
             assert isinstance(item, TextIOWrapper)
             assert item.mode == "a"
-        assert os.path.join(self.task_controller.home, ".datmo", "collections",
+        assert os.path.join(self.task_controller.home, ".prodat", "collections",
                             file_collection_obj.filehash,
                             "task.log") in file_names
-        assert os.path.join(self.task_controller.home, ".datmo", "collections",
+        assert os.path.join(self.task_controller.home, ".prodat", "collections",
                             file_collection_obj.filehash,
                             "filepath1") in file_names
 
@@ -834,7 +834,7 @@ class TestTaskController():
             task_obj.id, command_list=test_command_list)
         assert updated_task_obj.command_list == ["python", "script.py"]
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_delete(self):
         self.__setup()
         # Create tasks in the project
@@ -853,7 +853,7 @@ class TestTaskController():
         assert result == True and \
                thrown == True
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_stop_failure(self):
         self.__setup()
         # 1) Test required arguments not provided
@@ -884,7 +884,7 @@ class TestTaskController():
             thrown = True
         assert thrown
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_stop_success(self):
         self.__setup()
         # 1) Test stop with task_id

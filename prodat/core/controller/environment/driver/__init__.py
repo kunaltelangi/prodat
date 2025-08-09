@@ -19,7 +19,7 @@ class EnvironmentDriver(with_metaclass(ABCMeta, object)):
     setup(output_path)
         create environment definition
     create(path, output_path)
-        create datmo environment definition
+        create prodat environment definition
     build(name, path)
         build the environment
     run(name, options, log_filepath)
@@ -133,7 +133,7 @@ class EnvironmentDriver(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def create(self, path=None, output_path=None, workspace=None):
-        """Create datmo environment definition
+        """Create prodat environment definition
 
         Parameters
         ----------
@@ -142,9 +142,9 @@ class EnvironmentDriver(with_metaclass(ABCMeta, object)):
             (default is None, which searches for standard filename in project root,
             e.g. `Dockerfile` in project root for docker driver)
         output_path : str, optional
-            absolute datmo output definition file path
-            (default is None, which creates a name of above file with `datmo` prefixed
-            in the same directory as `path`. e.g. `datmoDockerfile` in
+            absolute prodat output definition file path
+            (default is None, which creates a name of above file with `prodat` prefixed
+            in the same directory as `path`. e.g. `prodatDockerfile` in
             the project root for the default above for docker driver)
         workspace : str, optional
             workspace being used while running the task
@@ -156,7 +156,7 @@ class EnvironmentDriver(with_metaclass(ABCMeta, object)):
             path : str
                 absolute path for original definition
             output_path : str
-                absolute path for datmo definition
+                absolute path for prodat definition
         """
 
     @abstractmethod
@@ -302,28 +302,28 @@ class EnvironmentDriver(with_metaclass(ABCMeta, object)):
         """
 
     @abstractmethod
-    def get_datmo_definition_filenames(self):
-        """Get the filenames of datmo definition files
+    def get_prodat_definition_filenames(self):
+        """Get the filenames of prodat definition files
 
         Returns
         -------
         list
-            list of file names of the datmo definition file
+            list of file names of the prodat definition file
         """
 
     @staticmethod
     @abstractmethod
-    def create_datmo_definition(input_definition_path,
+    def create_prodat_definition(input_definition_path,
                                 output_definition_path,
                                 workspace=None):
-        """Create a datmo version of the definition
+        """Create a prodat version of the definition
 
         Parameters
         ----------
         input_definition_path : str
             input original definition path to read from
         output_definition_path : str
-            output datmo definition path to write to
+            output prodat definition path to write to
         workspace : str, optional
             workspace being used while running the task
         Returns

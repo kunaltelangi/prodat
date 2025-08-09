@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Datmo documentation build configuration file, created by
+# prodat documentation build configuration file, created by
 # sphinx-quickstart on Tue Mar 20 08:36:19 2018.
 #
 # This file is execfile()d with the current directory set to its
@@ -23,7 +23,7 @@ from recommonmark.transform import AutoStructify
 sys.path.insert(0, os.path.abspath("../"))
 
 project_root = "../"
-with open(os.path.join(project_root, 'datmo', 'VERSION')) as file:
+with open(os.path.join(project_root, 'prodat', 'VERSION')) as file:
     __version__ = file.read()
 
 # -- General configuration ------------------------------------------------
@@ -61,7 +61,7 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = u'Datmo'
+project = u'prodat'
 copyright = u'2018, Acusense Technologies'
 author = u'Acusense Technologies'
 
@@ -85,7 +85,7 @@ language = None
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store',
-                    '../datmo/core*', 'datmo/core*', 'core*', '*modules*']
+                    '../prodat/core*', 'prodat/core*', 'core*', '*modules*']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -114,7 +114,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Datmodoc'
+htmlhelp_basename = 'prodatdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -140,7 +140,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Datmo.tex', u'Datmo Documentation', u'Anand Sampat',
+    (master_doc, 'prodat.tex', u'prodat Documentation', u'Anand Sampat',
      'manual'),
 ]
 
@@ -148,7 +148,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, 'datmo', u'Datmo Documentation', [author], 1)]
+man_pages = [(master_doc, 'prodat', u'prodat Documentation', [author], 1)]
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -156,11 +156,11 @@ man_pages = [(master_doc, 'datmo', u'Datmo Documentation', [author], 1)]
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Datmo', u'Datmo Documentation', author, 'Datmo',
+    (master_doc, 'prodat', u'prodat Documentation', author, 'prodat',
      'Open source model tracking for developers.', 'Miscellaneous'),
 ]
 
-github_doc_root = 'https://github.com/datmo/datmo/tree/master/docs/'
+github_doc_root = 'https://github.com/prodat/prodat/tree/master/docs/'
 
 def setup(app):
     app.connect('builder-inited', run_apidoc)
@@ -176,7 +176,7 @@ def run_apidoc(_):
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
     cur_dir = os.path.abspath(os.path.dirname(__file__))
     src_dir = os.path.join(cur_dir, "source")
-    module = os.path.join(cur_dir,"..","datmo")
+    module = os.path.join(cur_dir,"..","prodat")
     main(['-e', '-f', '-o', src_dir, module,
           os.path.join(module, "core"),
           os.path.join(module, "tests"),

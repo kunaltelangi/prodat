@@ -33,24 +33,24 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.config import Config
-from datmo.cli.driver.helper import Helper
-from datmo.cli.command.project import ProjectCommand
-from datmo.cli.command.snapshot import SnapshotCommand
+from prodat.config import Config
+from prodat.cli.driver.helper import Helper
+from prodat.cli.command.project import ProjectCommand
+from prodat.cli.command.snapshot import SnapshotCommand
 
-from datmo.cli.command.run import RunCommand
-from datmo.core.util.exceptions import (ProjectNotInitialized,
+from prodat.cli.command.run import RunCommand
+from prodat.core.util.exceptions import (ProjectNotInitialized,
                                         MutuallyExclusiveArguments,
                                         SnapshotCreateFromTaskArgs)
-from datmo.core.util.misc_functions import pytest_docker_environment_failed_instantiation
+from prodat.core.util.misc_functions import pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestSnapshotCommand():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         Config().set_home(self.temp_dir)
         self.cli_helper = Helper()
 
@@ -109,21 +109,21 @@ class TestSnapshotCommand():
     def test_snapshot_help(self):
         self.__set_variables()
         print(
-            "\n====================================== datmo snapshot ==========================\n"
+            "\n====================================== prodat snapshot ==========================\n"
         )
 
         self.snapshot_command.parse(["snapshot"])
         assert self.snapshot_command.execute()
 
         print(
-            "\n====================================== datmo snapshot --help ==========================\n"
+            "\n====================================== prodat snapshot --help ==========================\n"
         )
 
         self.snapshot_command.parse(["snapshot", "--help"])
         assert self.snapshot_command.execute()
 
         print(
-            "\n====================================== datmo snapshot create --help ==========================\n"
+            "\n====================================== prodat snapshot create --help ==========================\n"
         )
 
         self.snapshot_command.parse(["snapshot", "create", "--help"])
@@ -242,7 +242,7 @@ class TestSnapshotCommand():
         snapshot_obj = self.snapshot_command.execute()
         assert snapshot_obj
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_snapshot_create_from_run(self):
         self.__set_variables()
         test_message = "this is a test message"
@@ -270,7 +270,7 @@ class TestSnapshotCommand():
         snapshot_obj = self.snapshot_command.execute()
         assert snapshot_obj
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_snapshot_create_from_run_fail_user_inputs(self):
         self.__set_variables()
         test_message = "this is a test message"
@@ -621,7 +621,7 @@ class TestSnapshotCommand():
             exception_thrown = True
         assert exception_thrown
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_snapshot_ls_invisible(self):
         self.__set_variables()
 

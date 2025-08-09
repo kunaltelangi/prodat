@@ -40,8 +40,8 @@ install:
   - ps: (new-object net.webclient).DownloadFile('https://bootstrap.pypa.io/get-pip.py', 'C:/get-pip.py')
   - ps: '[Environment]::SetEnvironmentVariable("LCOW_SUPPORTED", "1", "Machine")'
   - ps: 'Restart-Service Docker'
-  - git config --global user.email "dev@datmo.com"
-  - git config --global user.name "Datmo Devs"
+  - git config --global user.email "dev@prodat.com"
+  - git config --global user.name "prodat Devs"
   - "%PYTHON%/python.exe C:/get-pip.py"
   - "%PYTHON%/python.exe -m pip install pip==9.0.3"
   - "%PYTHON%/python.exe -m pip install urllib3==1.23"

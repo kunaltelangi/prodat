@@ -1,22 +1,22 @@
 # CLI + R examples
 
-In order to run the examples, make sure that you have datmo properly installed with the latest 
+In order to run the examples, make sure that you have prodat properly installed with the latest 
 stable or development version. You can install it with the following command:
 ```
-$ pip install datmo
+$ pip install prodat
 ```
-*Note: Datmo installation is currently only officially supported through pip, Python's package manager. If you don't already have it installed, [you can find it here.](https://pip.pypa.io/en/stable/installing/)*
+*Note: prodat installation is currently only officially supported through pip, Python's package manager. If you don't already have it installed, [you can find it here.](https://pip.pypa.io/en/stable/installing/)*
 
 ## Using the Examples
 ### R
 1. Navigate to desired project folder or create a new one 
 
-        $ mkdir MY_DATMO_PROJECT
-        $ cd MY_DATMO_PROJECT
+        $ mkdir MY_prodat_PROJECT
+        $ cd MY_prodat_PROJECT
         
-2. Initialize the datmo project (skip this step if using an example with .Rmd)
+2. Initialize the prodat project (skip this step if using an example with .Rmd)
 
-        $ datmo init
+        $ prodat init
 
 3. Copy/save example files within project folder (if directory, copy the contents of the directory)
 
@@ -30,7 +30,7 @@ $ pip install datmo
    
         $ cp /path/to/DIRECTORY/* .
         
-4. Open RStudio from the terminal (allows $PATH to find Datmo in MacOS)
+4. Open RStudio from the terminal (allows $PATH to find prodat in MacOS)
 
         $ open -a RStudio
     
@@ -48,6 +48,6 @@ in the example.
 
 | feature  | filename(s) | Instructions |
 | ------------- |:-------------:| -----|
-| Create Snapshot | `snapshot_create_iris_caret.R`| (1) Open and run `snapshot_create_iris_caret.R` in RStudio <br> (2) See snapshot created with `$ datmo snapshot ls` |
-| Create Snapshot Notebook | `snapshot_create_notebook.Rmd`| (1) Open and run `snapshot_create_notebook.Rmd` in RStudio <br> (2) See snapshot created with `$ datmo snapshot ls` |
-| Open a new RStudio workspace | N/A | (1) `$ datmo environment setup`, choose an image that contains RStudio <br> (2) Run `$ datmo rstudio` |
+| Create Snapshot | `snapshot_create_iris_caret.R`| (1) Open and run `snapshot_create_iris_caret.R` in RStudio <br> (2) See snapshot created with `$ prodat snapshot ls` |
+| Create Snapshot Notebook | `snapshot_create_notebook.Rmd`| (1) Open and run `snapshot_create_notebook.Rmd` in RStudio <br> (2) See snapshot created with `$ prodat snapshot ls` |
+| Open a new RStudio workspace | N/A | (1) `$ prodat environment setup`, choose an image that contains RStudio <br> (2) Run `$ prodat rstudio` |

@@ -1,5 +1,5 @@
 ---
-title: "Log your experiments in R with Datmo"
+title: "Log your experiments in R with prodat"
 author: "Nick Walsh"
 output:
   html_document:
@@ -21,28 +21,28 @@ install.packages("caret", dependencies = TRUE) # Model selection/tuning package
 install.packages("rpart.plot", dependencies = TRUE) # Visualization package
 ```
 
-We're going to install a python package called Datmo, which will enable us to log and track our experiments through the power of *snapshots*.
+We're going to install a python package called prodat, which will enable us to log and track our experiments through the power of *snapshots*.
 If you don't already have pip, you can [find it here](https://pip.pypa.io/en/stable/installing/).
 
 ```{bash}
-pip install datmo
+pip install prodat
 ```
 
 Next, we're going to want to make sure we've set the proper working directory. We can do this easily through the 
 RStudio file finder on the right, or with the following command.
 
-This will be necessary so that Datmo knows the proper directory to perform tracking in. 
+This will be necessary so that prodat knows the proper directory to perform tracking in. 
 
 ```{r "setup", include=FALSE}
 require("knitr")
-opts_knit$set(root.dir = "~/Dev/datmo-R-example") # Replace with whatever your root directory for the project is
+opts_knit$set(root.dir = "~/Dev/prodat-R-example") # Replace with whatever your root directory for the project is
 ```
 
-Now we're going to initialize a Datmo repository. This will enable us to create snapshots for logging our experiments.
+Now we're going to initialize a prodat repository. This will enable us to create snapshots for logging our experiments.
 This only needs to be done once for a given repository.
 
-```{r initializeDatmo}
-system("datmo init", input=c("my new project","test description"), timeout=15)
+```{r initializeprodat}
+system("prodat init", input=c("my new project","test description"), timeout=15)
 ```
 
 Example
@@ -104,11 +104,11 @@ save.image()
 We can create a snapshot with the following command. A snapshot will enable us to log our experiment and reproduce the state of code, environment, metrics, and more in future examples.
 
 ```{r snapshotCreate}
-system2("datmo", args=paste("snapshot create", "-m 'Whoah, my first snapshot!'", config, stats), timeout=15)
+system2("prodat", args=paste("snapshot create", "-m 'Whoah, my first snapshot!'", config, stats), timeout=15)
 ```
 
 We can visualize the snapshot we just created (and any others associated with this project) with the following command
 
 ```{bash}
-datmo snapshot ls
+prodat snapshot ls
 ```

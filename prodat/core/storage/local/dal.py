@@ -2,17 +2,17 @@ import os
 from kids.cache import cache
 from datetime import datetime
 
-from datmo.core.util.i18n import get as __
-from datmo.core.entity.model import Model
-from datmo.core.entity.code import Code
-from datmo.core.entity.environment import Environment
-from datmo.core.entity.file_collection import FileCollection
-from datmo.core.entity.task import Task
-from datmo.core.entity.snapshot import Snapshot
-from datmo.core.entity.user import User
-from datmo.core.util.exceptions import InputError, EntityNotFound, MoreThanOneEntityFound, DALNotInitialized
-from datmo.core.util.misc_functions import create_unique_hash
-from datmo.core.storage.driver.blitzdb_dal_driver import BlitzDBDALDriver
+from prodat.core.util.i18n import get as __
+from prodat.core.entity.model import Model
+from prodat.core.entity.code import Code
+from prodat.core.entity.environment import Environment
+from prodat.core.entity.file_collection import FileCollection
+from prodat.core.entity.task import Task
+from prodat.core.entity.snapshot import Snapshot
+from prodat.core.entity.user import User
+from prodat.core.util.exceptions import InputError, EntityNotFound, MoreThanOneEntityFound, DALNotInitialized
+from prodat.core.util.misc_functions import create_unique_hash
+from prodat.core.storage.driver.blitzdb_dal_driver import BlitzDBDALDriver
 
 class LocalDAL():
     """
@@ -25,14 +25,14 @@ class LocalDAL():
         type of driver to pull from
     driver_options : dict
         options for the DALdriver class
-    driver : datmo.core.storage.driver.DALDriver, optional
+    driver : prodat.core.storage.driver.DALDriver, optional
         Instantiated DAL driver used for backend storage for entities
 
     Attributes
     ----------
     driver_type : str
     driver_options : dict
-    driver : datmo.core.storage.driver.DALDriver
+    driver : prodat.core.storage.driver.DALDriver
         Instantiated DAL driver used for backend storage for entities
     is_initialized : bool
     model : ModelMethods
@@ -210,12 +210,12 @@ class EntityMethodsCRUD(object):
                                               shortened_entity_id)
         return self.entity_class(obj)
 
-    def create(self, datmo_entity):
-        # translate datmo_entity to a standard dictionary (document) to be stored
-        if hasattr(datmo_entity, 'to_dictionary'):
-            dict_obj = datmo_entity.to_dictionary()
+    def create(self, prodat_entity):
+        # translate prodat_entity to a standard dictionary (document) to be stored
+        if hasattr(prodat_entity, 'to_dictionary'):
+            dict_obj = prodat_entity.to_dictionary()
         else:
-            dict_obj = self.entity_class(datmo_entity).to_dictionary()
+            dict_obj = self.entity_class(prodat_entity).to_dictionary()
         # create a unique hash from misc_functions.py
         # TODO: find efficient way to get previous hash for entity
         # latest_entity = self.query({"id": latest})
@@ -226,22 +226,22 @@ class EntityMethodsCRUD(object):
         entity_instance = self.entity_class(response)
         return entity_instance
 
-    def update(self, datmo_entity):
-        # translate datmo_entity to a standard dictionary (document) to be stored
-        if hasattr(datmo_entity, 'to_dictionary'):
-            dict_obj = datmo_entity.to_dictionary()
+    def update(self, prodat_entity):
+        # translate prodat_entity to a standard dictionary (document) to be stored
+        if hasattr(prodat_entity, 'to_dictionary'):
+            dict_obj = prodat_entity.to_dictionary()
         else:
-            if 'id' not in list(datmo_entity) or not datmo_entity['id']:
+            if 'id' not in list(prodat_entity) or not prodat_entity['id']:
                 raise InputError(__("error", "storage.local.dal.update"))
             # Aggregate original object and new object into dict_obj var
-            new_dict_obj = datmo_entity
-            original_datmo_entity = self.get_by_id(datmo_entity['id'])
+            new_dict_obj = prodat_entity
+            original_prodat_entity = self.get_by_id(prodat_entity['id'])
             dict_obj = {}
-            for key, value in original_datmo_entity.to_dictionary().items():
+            for key, value in original_prodat_entity.to_dictionary().items():
                 if key in list(new_dict_obj):
                     dict_obj[key] = new_dict_obj[key]
                 else:
-                    dict_obj[key] = getattr(original_datmo_entity, key)
+                    dict_obj[key] = getattr(original_prodat_entity, key)
 
         # set updated_at always
         dict_obj['updated_at'] = datetime.utcnow()
@@ -273,7 +273,7 @@ class EntityMethodsCRUD(object):
 #
 
 #
-# Datmo Entity methods
+# prodat Entity methods
 #
 class ModelMethods(EntityMethodsCRUD):
     def __init__(self, driver):

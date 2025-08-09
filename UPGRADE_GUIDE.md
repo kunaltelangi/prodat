@@ -1,7 +1,7 @@
-# Datmo Library Upgrade Guide
+# prodat Library Upgrade Guide
 
 ## Overview
-This document outlines the changes made to upgrade the Datmo library from legacy Python 2/3 compatibility to modern Python 3.7+ support.
+This document outlines the changes made to upgrade the prodat library from legacy Python 2/3 compatibility to modern Python 3.7+ support.
 
 ## Issues Addressed
 
@@ -48,8 +48,8 @@ The codebase contained unnecessary Python 2 compatibility branches and imports t
 ### Fresh Installation
 ```bash
 # Clone the repository
-git clone https://github.com/datmo/datmo.git
-cd datmo
+git clone https://github.com/prodat/prodat.git
+cd prodat
 
 # Install in development mode
 pip install -e .
@@ -67,16 +67,16 @@ pip install -r requirements-dev.txt
 pytest
 
 # Code formatting
-black datmo/
-isort datmo/
+black prodat/
+isort prodat/
 ```
 
 ## Verification
 
 The upgrade was successful as evidenced by:
 1. ✅ Package installs without compilation errors
-2. ✅ `datmo --help` command works
-3. ✅ `datmo version` returns correct version
+2. ✅ `prodat --help` command works
+3. ✅ `prodat version` returns correct version
 4. ✅ All core dependencies resolve properly
 
 ## Known Issues
@@ -105,19 +105,19 @@ While the package now works with modern Python, there are still `from __future__
 
 Basic functionality has been verified:
 ```bash
-$ datmo --help     # ✅ Works
-$ datmo version    # ✅ Returns 0.0.41-dev
+$ prodat --help     # ✅ Works
+$ prodat version    # ✅ Returns 0.0.41-dev
 ```
 
 For comprehensive testing, run the full test suite:
 ```bash
-pytest datmo/
+pytest prodat/
 ```
 
 ## Migration Notes
 
 If you're upgrading from an older version:
-1. **Backup your `.datmo` directory** before upgrading
+1. **Backup your `.prodat` directory** before upgrading
 2. **Update your Python environment** to 3.7+
 3. **Reinstall the package** in a clean environment
 4. **Test your existing projects** to ensure compatibility

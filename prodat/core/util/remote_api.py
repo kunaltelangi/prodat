@@ -2,7 +2,7 @@ import json
 import requests
 
 class RemoteAPI():
-    """API for Accessing Datmo Services
+    """API for Accessing prodat Services
 
     Parameters
     ----------
@@ -15,28 +15,28 @@ class RemoteAPI():
     Methods
     -------
     post_data(input_data)
-        post single data point to Datmo scoped by model
+        post single data point to prodat scoped by model
     get_data(filter)
-        get data information from Datmo scoped by filter
+        get data information from prodat scoped by filter
     update_actual(id, actual)
         update the data id with actual values (y_hat)
     get_deployment_info()
-        returns deployment info from Datmo deployed models
+        returns deployment info from prodat deployed models
     """
 
-    # TODO: move url into configurations (to be setup `datmo configure`
+    # TODO: move url into configurations (to be setup `prodat configure`
     def __init__(self, api_key):
         self._api_key = api_key
         self.post_meta_data_endpoint = \
-            "https://s8l9gg1li9.execute-api.eu-west-1.amazonaws.com/production/datmo_monitoring"
+            "https://s8l9gg1li9.execute-api.eu-west-1.amazonaws.com/production/prodat_monitoring"
         self.get_meta_data_endpoint = \
-            "https://mgwf6kjso7.execute-api.eu-west-1.amazonaws.com/production/datmo_monitoring"
+            "https://mgwf6kjso7.execute-api.eu-west-1.amazonaws.com/production/prodat_monitoring"
         self.put_meta_data_endpoint = \
-            "https://6xav2qlolf.execute-api.eu-west-1.amazonaws.com/production/datmo_monitoring"
+            "https://6xav2qlolf.execute-api.eu-west-1.amazonaws.com/production/prodat_monitoring"
         self.get_deployment_info_endpoint = \
-            "https://hb0c2py3sh.execute-api.eu-west-1.amazonaws.com/production/datmo_deployments"
+            "https://hb0c2py3sh.execute-api.eu-west-1.amazonaws.com/production/prodat_deployments"
         self.delete_meta_data_endpoint = \
-            "https://ynpas9m577.execute-api.eu-west-1.amazonaws.com/production/datmo_monitoring"
+            "https://ynpas9m577.execute-api.eu-west-1.amazonaws.com/production/prodat_monitoring"
 
     def post_data(self, input_data):
         # Run post request and gather result and return to user

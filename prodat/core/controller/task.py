@@ -5,14 +5,14 @@ import threading
 import webbrowser
 from datetime import datetime
 
-from datmo.core.controller.base import BaseController
-from datmo.core.controller.snapshot import SnapshotController
-from datmo.core.controller.environment.environment import EnvironmentController
-from datmo.core.entity.task import Task
-from datmo.core.util.validation import validate
-from datmo.core.util.spinner import Spinner
-from datmo.core.util.i18n import get as __
-from datmo.core.util.exceptions import (
+from prodat.core.controller.base import BaseController
+from prodat.core.controller.snapshot import SnapshotController
+from prodat.core.controller.environment.environment import EnvironmentController
+from prodat.core.entity.task import Task
+from prodat.core.util.validation import validate
+from prodat.core.util.spinner import Spinner
+from prodat.core.util.i18n import get as __
+from prodat.core.util.exceptions import (
     TaskRunError, RequiredArgumentMissing, ProjectNotInitialized,
     PathDoesNotExist, TaskInteractiveDetachError, TooManyArgumentsFound,
     EntityNotFound, DoesNotExist, TaskNoCommandGiven)
@@ -23,9 +23,9 @@ class TaskController(BaseController):
 
     Attributes
     ----------
-    environment : datmo.core.controller.environment.environment.EnvironmentController
+    environment : prodat.core.controller.environment.environment.EnvironmentController
         used to create environment if new definition file
-    snapshot : datmo.core.controller.snapshot.SnapshotController
+    snapshot : prodat.core.controller.snapshot.SnapshotController
         used to create snapshots before and after tasks
 
     Methods
@@ -58,7 +58,7 @@ class TaskController(BaseController):
         Returns
         -------
         Task
-            object entity for Task (datmo.core.entity.task.Task)
+            object entity for Task (prodat.core.entity.task.Task)
         """
 
         # Validate Inputs
@@ -258,7 +258,7 @@ class TaskController(BaseController):
     def run(self, task_id, snapshot_dict=None, task_dict=None):
         """Run a task with parameters. If dictionary specified, create a new task with new run parameters.
         Snapshot objects are created before and after the task to keep track of the state. During the run,
-        you can access task outputs using environment variable DATMO_TASK_DIR or `/task` which points to
+        you can access task outputs using environment variable prodat_TASK_DIR or `/task` which points to
         location for the task files. Create config.json, stats.json and any weights or any file such
         as graphs and visualizations within that directory for quick access
 
@@ -273,7 +273,7 @@ class TaskController(BaseController):
             of whether the user provides another value for `visible`.
         task_dict : dict
             set of parameters to characterize the task run
-            (default is None, which translate to {}, see datmo.core.entity.task.Task for more details on inputs)
+            (default is None, which translate to {}, see prodat.core.entity.task.Task for more details on inputs)
 
         Returns
         -------
@@ -311,7 +311,7 @@ class TaskController(BaseController):
             raise TaskRunError(
                 __("error", "cli.run.run.already_running", task_obj.id))
         # Create Task directory for user during run
-        task_dirpath = os.path.join(".datmo", "tasks", task_obj.id)
+        task_dirpath = os.path.join(".prodat", "tasks", task_obj.id)
         try:
             _ = self.file_driver.create(task_dirpath, directory=True)
         except Exception:
@@ -392,7 +392,7 @@ class TaskController(BaseController):
             environment_run_options = {
                 "command": task_obj.command_list,
                 "ports": [] if task_obj.ports is None else task_obj.ports,
-                "name": "datmo-task-" + self.model.id + "-" + task_obj.id,
+                "name": "prodat-task-" + self.model.id + "-" + task_obj.id,
                 "volumes": {},
                 "mem_limit": task_obj.mem_limit,
                 "workspace": task_obj.workspace,
@@ -491,7 +491,7 @@ class TaskController(BaseController):
 
         Returns
         -------
-        datmo.core.entity.task.Task
+        prodat.core.entity.task.Task
             core task object
 
         Raises
@@ -625,7 +625,7 @@ class TaskController(BaseController):
             except DoesNotExist:
                 time.sleep(1)
                 task_obj = self.get(task_id)
-            task_match_string = "datmo-task-" + self.model.id + "-" + task_id
+            task_match_string = "prodat-task-" + self.model.id + "-" + task_id
             # Get the environment id associated with the task
             kwargs = {'match_string': task_match_string}
             # Get the environment from the task

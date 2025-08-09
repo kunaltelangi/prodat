@@ -26,14 +26,14 @@ except TypeError:
 from docker import DockerClient
 from docker import errors
 
-from datmo.core.util.i18n import get as __
-from datmo.core.util.exceptions import (
+from prodat.core.util.i18n import get as __
+from prodat.core.util.exceptions import (
     PathDoesNotExist, EnvironmentInitFailed, EnvironmentConnectFailed,
     EnvironmentExecutionError, FileAlreadyExistsError,
     EnvironmentRequirementsCreateError, EnvironmentImageNotFound,
     EnvironmentContainerNotFound, GPUSupportNotEnabled,
     EnvironmentDoesNotExist, FileStructureError)
-from datmo.core.controller.environment.driver import EnvironmentDriver
+from prodat.core.controller.environment.driver import EnvironmentDriver
 
 docker_config_filepath = os.path.join(
     os.path.split(__file__)[0], "config", "docker.json")
@@ -58,8 +58,8 @@ class DockerEnvironmentDriver(EnvironmentDriver):
     ----------
     root : str
         home filepath for project
-    datmo_directory_name : str
-        datmo directory name for project
+    prodat_directory_name : str
+        prodat directory name for project
     docker_execpath : str, optional
         docker execution path for the system
     docker_socket : str, optional
@@ -79,7 +79,7 @@ class DockerEnvironmentDriver(EnvironmentDriver):
 
     def __init__(self,
                  root,
-                 datmo_directory_name,
+                 prodat_directory_name,
                  docker_execpath="docker",
                  docker_socket=None):
         super(DockerEnvironmentDriver, self).__init__()
@@ -92,17 +92,17 @@ class DockerEnvironmentDriver(EnvironmentDriver):
             raise PathDoesNotExist(
                 __("error",
                    "controller.environment.driver.docker.__init__.dne", root))
-        self._datmo_directory_name = datmo_directory_name
-        self._datmo_directory_path = os.path.join(self.root,
-                                                  self._datmo_directory_name)
+        self._prodat_directory_name = prodat_directory_name
+        self._prodat_directory_path = os.path.join(self.root,
+                                                  self._prodat_directory_name)
         self.environment_directory_name = "environment"
         self.environment_directory_path = os.path.join(
-            self._datmo_directory_path, self.environment_directory_name)
+            self._prodat_directory_path, self.environment_directory_name)
         self.docker_execpath = docker_execpath
         self.docker_socket = docker_socket
         
         # Check if Docker tests should be skipped
-        skip_docker_tests = os.environ.get("DATMO_SKIP_DOCKER_TESTS", "0").lower() in ["1", "true", "yes"]
+        skip_docker_tests = os.environ.get("prodat_SKIP_DOCKER_TESTS", "0").lower() in ["1", "true", "yes"]
         
         if skip_docker_tests:
             # Skip Docker client initialization
@@ -166,7 +166,7 @@ class DockerEnvironmentDriver(EnvironmentDriver):
 
     # Environment directory
     def create_environment_dir(self):
-        if not os.path.isdir(self._datmo_directory_path):
+        if not os.path.isdir(self._prodat_directory_path):
             raise FileStructureError(
                 __("error",
                    "controller.file.driver.local.create_collections_dir"))
@@ -250,12 +250,12 @@ class DockerEnvironmentDriver(EnvironmentDriver):
         with open(definition_filepath, "wb") as f:
             if environment_language:
                 f.write(
-                    to_bytes("FROM datmo/%s:%s-%s%s%s" %
+                    to_bytes("FROM prodat/%s:%s-%s%s%s" %
                              (environment_framework, environment_type,
                               environment_language, os.linesep, os.linesep)))
             else:
                 f.write(
-                    to_bytes("FROM datmo/%s:%s%s%s" %
+                    to_bytes("FROM prodat/%s:%s%s%s" %
                              (environment_framework, environment_type,
                               os.linesep, os.linesep)))
         return True
@@ -265,7 +265,7 @@ class DockerEnvironmentDriver(EnvironmentDriver):
             path = os.path.join(self.root, "Dockerfile")
         if not output_path:
             directory, filename = os.path.split(path)
-            output_path = os.path.join(directory, "datmo" + filename)
+            output_path = os.path.join(directory, "prodat" + filename)
         if not os.path.isfile(path):
             raise EnvironmentDoesNotExist(
                 __("error", "controller.environment.driver.docker.create.dne",
@@ -275,7 +275,7 @@ class DockerEnvironmentDriver(EnvironmentDriver):
                 __("error",
                    "controller.environment.driver.docker.create.exists",
                    output_path))
-        success = self.create_datmo_definition(
+        success = self.create_prodat_definition(
             input_definition_path=path,
             output_definition_path=output_path,
             workspace=workspace)
@@ -421,11 +421,11 @@ class DockerEnvironmentDriver(EnvironmentDriver):
             docker_shell_cmd_list.append(tag)
 
             # Passing path of Dockerfile
-            # Creating datmoDockerfile for new build
+            # Creating prodatDockerfile for new build
             dockerfile_dirpath = os.path.split(definition_path)[0]
             input_dockerfile = os.path.split(definition_path)[1]
             output_dockerfile_path = os.path.join(dockerfile_dirpath,
-                                                  "datmo%s" % input_dockerfile)
+                                                  "prodat%s" % input_dockerfile)
             self.create(definition_path, output_dockerfile_path, workspace)
             docker_shell_cmd_list.append("-f")
             docker_shell_cmd_list.append(output_dockerfile_path)
@@ -923,7 +923,7 @@ class DockerEnvironmentDriver(EnvironmentDriver):
         if package_manager == "pip":
             try:
                 requirements_filepath = os.path.join(self.root,
-                                                     "datmorequirements.txt")
+                                                     "prodatrequirements.txt")
                 outfile_requirements = open(requirements_filepath, "wb")
                 process = subprocess.Popen(
                     ["pip", "freeze"],
@@ -968,7 +968,7 @@ class DockerEnvironmentDriver(EnvironmentDriver):
     def get_default_definition_filename(self):
         return "Dockerfile"
 
-    def get_datmo_definition_filenames(self):
+    def get_prodat_definition_filenames(self):
         return ["hardware_info"]
 
     def get_hardware_info(self):
@@ -985,22 +985,22 @@ class DockerEnvironmentDriver(EnvironmentDriver):
         }
 
     @staticmethod
-    def create_datmo_definition(input_definition_path,
+    def create_prodat_definition(input_definition_path,
                                 output_definition_path,
                                 workspace=None):
         """
-        Creates a datmo dockerfiles to run at the output path specified
+        Creates a prodat dockerfiles to run at the output path specified
         """
-        datmo_base_dockerfile_path = os.path.join(
+        prodat_base_dockerfile_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "templates",
             "baseDockerfile")
         # Combine dockerfiles
         with open(input_definition_path, "rb") as input_file:
-            with open(datmo_base_dockerfile_path, "rb") as datmo_base_file:
+            with open(prodat_base_dockerfile_path, "rb") as prodat_base_file:
                 with open(output_definition_path, "wb") as output_file:
                     for line in input_file:
                         bool_workspace_update = (
-                            to_bytes('FROM datmo/') in line.strip()
+                            to_bytes('FROM prodat/') in line.strip()
                             and workspace)
                         if to_bytes("\n") in line and bool_workspace_update:
                             updated_line = line.strip() + to_bytes(
@@ -1010,7 +1010,7 @@ class DockerEnvironmentDriver(EnvironmentDriver):
                         else:
                             updated_line = line.strip()
                         output_file.write(updated_line)
-                    for line in datmo_base_file:
+                    for line in prodat_base_file:
                         if to_bytes("\n") in line:
                             output_file.write(
                                 line.strip() + to_bytes(os.linesep))

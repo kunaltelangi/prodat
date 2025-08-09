@@ -2,7 +2,7 @@
 Tests for i18n
 """
 
-from datmo.core.util.i18n import get
+from prodat.core.util.i18n import get
 
 class Testi18n():
     def test_get(self):

@@ -3,15 +3,15 @@
 # This script demonstrates how to rerun a task you've run previously within this project.
 
 # Step 0: Have a previously run task with:
-$ datmo run <your-cmd-here>
+$ prodat run <your-cmd-here>
 # or
-$ datmo <workspace> # ex: notebook, rstudio, etc
+$ prodat <workspace> # ex: notebook, rstudio, etc
 
 # Step 1: Find the previous run ID from the run table:
-$ datmo run ls
+$ prodat run ls
 
 # Step 2: Re-run using the following command:
-$ datmo rerun <run-id>
+$ prodat rerun <run-id>
 
 
 # NOTE:

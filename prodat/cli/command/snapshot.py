@@ -2,12 +2,12 @@
 import os
 from datetime import datetime
 
-from datmo.core.util.i18n import get as __
-from datmo.cli.driver.helper import Helper
-from datmo.core.util.misc_functions import mutually_exclusive, printable_object, prettify_datetime, parse_cli_key_value, format_table
-from datmo.core.util.exceptions import (SnapshotCreateFromTaskArgs)
-from datmo.cli.command.project import ProjectCommand
-from datmo.core.controller.snapshot import SnapshotController
+from prodat.core.util.i18n import get as __
+from prodat.cli.driver.helper import Helper
+from prodat.core.util.misc_functions import mutually_exclusive, printable_object, prettify_datetime, parse_cli_key_value, format_table
+from prodat.core.util.exceptions import (SnapshotCreateFromTaskArgs)
+from prodat.cli.command.project import ProjectCommand
+from prodat.core.controller.snapshot import SnapshotController
 
 class SnapshotCommand(ProjectCommand):
     def __init__(self, cli_helper):

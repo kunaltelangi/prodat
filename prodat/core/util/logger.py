@@ -6,10 +6,10 @@ import logging.handlers
 import os
 import tempfile
 import time
-from datmo.core.util.misc_functions import grep
+from prodat.core.util.misc_functions import grep
 
-class DatmoLogger(object):
-    """ Datmo Logging singleton
+class prodatLogger(object):
+    """ prodat Logging singleton
 
     Good info https://fangpenlin.com/posts/2012/08/26/good-logging-practice-in-python/
     """
@@ -26,7 +26,7 @@ class DatmoLogger(object):
             # NOTSET 0
             self.logging_level = self.get_logging_level()
             self.dirpath = dirpath
-            self.logging_path = os.path.join(self.dirpath, '.datmo', 'logs')
+            self.logging_path = os.path.join(self.dirpath, '.prodat', 'logs')
             self.loggers = {}
             if not os.path.exists(self.logging_path):
                 os.makedirs(self.logging_path)
@@ -42,10 +42,10 @@ class DatmoLogger(object):
     def __new__(cls, dirpath=None):  # __new__ always a classmethod
         if not dirpath:
             dirpath = os.path.expanduser("~")
-        if not hasattr(DatmoLogger, "instance") or \
-            (hasattr(DatmoLogger, "instance") and not DatmoLogger.instance):
-            DatmoLogger.instance = DatmoLogger.__InternalObj(dirpath)
-        return DatmoLogger.instance
+        if not hasattr(prodatLogger, "instance") or \
+            (hasattr(prodatLogger, "instance") and not prodatLogger.instance):
+            prodatLogger.instance = prodatLogger.__InternalObj(dirpath)
+        return prodatLogger.instance
 
     def __getattr__(self, name):
         return getattr(self.instance, name)
@@ -55,8 +55,8 @@ class DatmoLogger(object):
 
     @staticmethod
     def get_logfiles():
-        return list(map(lambda f: os.path.join(DatmoLogger().logging_path, f),
-                       os.listdir(DatmoLogger().logging_path)))
+        return list(map(lambda f: os.path.join(prodatLogger().logging_path, f),
+                       os.listdir(prodatLogger().logging_path)))
 
     @staticmethod
     def find_text_in_logs(text_str):
@@ -64,7 +64,7 @@ class DatmoLogger(object):
         logging.shutdown()
         
         # Re-initialize loggers after shutdown
-        for logger_hash, logger in list(DatmoLogger().loggers.items()):
+        for logger_hash, logger in list(prodatLogger().loggers.items()):
             if logger:
                 # Remove existing handlers
                 for handler in logger.handlers[:]:  # Use a copy of the list
@@ -73,13 +73,13 @@ class DatmoLogger(object):
                 # Re-add handlers if needed
                 if logger_hash.startswith('timeit'):
                     # Special case for timeit logger
-                    logfile_path = os.path.join(DatmoLogger().logging_path, "timers.log")
+                    logfile_path = os.path.join(prodatLogger().logging_path, "timers.log")
                 else:
-                    logfile_path = os.path.join(DatmoLogger().logging_path, "log.txt")
+                    logfile_path = os.path.join(prodatLogger().logging_path, "log.txt")
                     
                 # Create a new handler
                 handler = logging.FileHandler(logfile_path, mode='a')
-                handler.setLevel(DatmoLogger().logging_level)
+                handler.setLevel(prodatLogger().logging_level)
                 handler.setFormatter(
                     logging.Formatter(
                         '%(asctime)s - [%(name)s@%(module)s.%(funcName)s] [%(levelname)s] - %(message)s'))
@@ -89,7 +89,7 @@ class DatmoLogger(object):
         time.sleep(0.2)
         
         results = []
-        for logfile in DatmoLogger.get_logfiles():
+        for logfile in prodatLogger.get_logfiles():
             try:
                 if os.path.exists(logfile) and os.path.getsize(logfile) > 0:
                     with open(logfile, "r") as f:
@@ -116,7 +116,7 @@ class DatmoLogger(object):
         Parameters
         ----------
         name : string
-            Name of the logger.  eg datmo.core.snapshot or __name__
+            Name of the logger.  eg prodat.core.snapshot or __name__
         file_name : string
             Log file name. default = log.txt
 
@@ -127,10 +127,10 @@ class DatmoLogger(object):
         """
 
         # get or create logging path
-        if DatmoLogger().logging_path == None:
-            DatmoLogger().logging_path = tempfile.mkdtemp()
+        if prodatLogger().logging_path == None:
+            prodatLogger().logging_path = tempfile.mkdtemp()
 
-        logging_path = DatmoLogger().logging_path
+        logging_path = prodatLogger().logging_path
         logfile_path = os.path.join(logging_path, file_name)
 
         if not os.path.exists(logging_path):
@@ -141,21 +141,21 @@ class DatmoLogger(object):
         logger_hash = hashlib.sha1(
             (name + file_name).encode('utf-8')).hexdigest()
 
-        if logger_hash in DatmoLogger().loggers:
+        if logger_hash in prodatLogger().loggers:
             # if file still exists then use cached logger
             # if file has been deleted manually, then empty cached obj
             # and allow re-initialization
             if os.path.exists(logfile_path):
-                return DatmoLogger().loggers[logger_hash]
+                return prodatLogger().loggers[logger_hash]
             else:
-                DatmoLogger().loggers[logger_hash] = None
+                prodatLogger().loggers[logger_hash] = None
 
         # create logger based on name
         log = logging.getLogger(logger_hash)
-        log.setLevel(DatmoLogger().logging_level)
+        log.setLevel(prodatLogger().logging_level)
 
         # cache logger
-        DatmoLogger().loggers[logger_hash] = log
+        prodatLogger().loggers[logger_hash] = log
 
         # console logging
         # log_stdout = logging.StreamHandler("ext://sys.stdout")
@@ -165,7 +165,7 @@ class DatmoLogger(object):
         if hasattr(logging, 'handlers'):
             log_file_handler = logging.handlers.RotatingFileHandler(
                 logfile_path, mode='a', maxBytes=10485760, backupCount=10)
-            log_file_handler.setLevel(DatmoLogger().logging_level)
+            log_file_handler.setLevel(prodatLogger().logging_level)
             log_file_handler.setFormatter(
                 logging.Formatter(
                     '%(asctime)s - [' + name +
@@ -178,7 +178,7 @@ class DatmoLogger(object):
 
     @staticmethod
     def timeit(method):
-        log = DatmoLogger.get_logger("timeit", "timers.log")
+        log = prodatLogger.get_logger("timeit", "timers.log")
 
         def timed(*args, **kw):
             ts = time.time()

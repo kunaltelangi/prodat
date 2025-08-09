@@ -16,16 +16,16 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.core.util.misc_functions import pytest_docker_environment_failed_instantiation
+from prodat.core.util.misc_functions import pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestMain():
     def setup_class(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
-        self.execpath = "datmo"
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
+        self.execpath = "prodat"
         os.chdir(self.temp_dir)
 
         # Create environment_driver definition
@@ -77,7 +77,7 @@ class TestMain():
             out, err = out.decode(), err.decode()
             if err:
                 success = False
-            elif "datmo version:" not in out:
+            elif "prodat version:" not in out:
                 success = False
         except Exception:
             success = False
@@ -100,7 +100,7 @@ class TestMain():
             success = False
         assert success
 
-    # @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    # @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     # def test_run(self):
     #     try:
     #         success = True

@@ -1,7 +1,7 @@
-# Datmo
+# prodat
 
-## Contributing to Datmo
-We encourage community contributions to Datmo. The best place to get started is by running examples 
+## Contributing to prodat
+We encourage community contributions to prodat. The best place to get started is by running examples 
 locally. Once you have it working, contributors can take a shot at improving our documentation. While
 our documentation is continually updated with code updates, there is always much room for improvement.
 Documentation can be found in the `docs/` directory, in the docstrings for functions in the code, and 
@@ -20,7 +20,7 @@ a pull request might progress
 4) the PR is mergeable and is almost good to go but requires changes that are quick and can be done by the maintainer -- or by other contributors to the main repo to make it consistent with existing code, in which case we close the current PR, bring the branch into the main repo, and make changes there, then merge
 
 ## Code Style Guidelines
-Datmo uses [yapf](https://github.com/google/yapf) to autoformat code.
+prodat uses [yapf](https://github.com/google/yapf) to autoformat code.
 
 ``` bash
 pip install yapf==0.20.0
@@ -31,7 +31,7 @@ yapf -i <python_files changed>
 Our integration tests will fail if code is not formatted correctly
 
 ## Documentation Style Guidelines
-Datmo uses [NumPy style documentation](https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt). Please follow these conventions when documenting code, since we use [Sphinx+Napoleon](http://www.sphinx-doc.org/en/stable/ext/napoleon.html) to automatically generate docs on [our Docs page](http://datmo.readthedocs.io/en/latest/)
+prodat uses [NumPy style documentation](https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt). Please follow these conventions when documenting code, since we use [Sphinx+Napoleon](http://www.sphinx-doc.org/en/stable/ext/napoleon.html) to automatically generate docs on [our Docs page](http://prodat.readthedocs.io/en/latest/)
 
 ## Developer Information
 You can find more developer information in the [`devtools/` directory](/devtools) including helpful

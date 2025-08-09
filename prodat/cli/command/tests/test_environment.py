@@ -28,20 +28,20 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.cli.driver.helper import Helper
-from datmo.cli.command.environment import EnvironmentCommand
-from datmo.cli.command.project import ProjectCommand
-from datmo.core.util.misc_functions import pytest_docker_environment_failed_instantiation
-from datmo.config import Config
-from datmo.core.util.exceptions import EnvironmentDoesNotExist
+from prodat.cli.driver.helper import Helper
+from prodat.cli.command.environment import EnvironmentCommand
+from prodat.cli.command.project import ProjectCommand
+from prodat.core.util.misc_functions import pytest_docker_environment_failed_instantiation
+from prodat.config import Config
+from prodat.core.util.exceptions import EnvironmentDoesNotExist
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestEnvironmentCommand():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         self.cli_helper = Helper()
         Config().set_home(self.temp_dir)
 
@@ -79,7 +79,7 @@ class TestEnvironmentCommand():
 
         assert result
         assert os.path.isfile(definition_filepath)
-        assert "FROM datmo/data-analytics:cpu-py27" in open(
+        assert "FROM prodat/data-analytics:cpu-py27" in open(
             definition_filepath, "r").read()
 
         # Test fail with wrong framework input
@@ -96,7 +96,7 @@ class TestEnvironmentCommand():
         result = dummy(self)
         assert result
         assert os.path.isfile(definition_filepath)
-        assert "FROM datmo/python-base:cpu-py27" in open(
+        assert "FROM prodat/python-base:cpu-py27" in open(
             definition_filepath, "r").read()
 
         # Test fail with wrong framework input and wrong language input
@@ -134,7 +134,7 @@ class TestEnvironmentCommand():
         result = dummy(self)
         assert result
         assert os.path.isfile(definition_filepath)
-        assert "FROM datmo/data-analytics:cpu-py27" in open(
+        assert "FROM prodat/data-analytics:cpu-py27" in open(
             definition_filepath, "r").read()
 
         # Test success with correct prompt input using numbers
@@ -147,7 +147,7 @@ class TestEnvironmentCommand():
         result = dummy(self)
         assert result
         assert os.path.isfile(definition_filepath)
-        assert "FROM datmo/caffe2:cpu" in open(definition_filepath, "r").read()
+        assert "FROM prodat/caffe2:cpu" in open(definition_filepath, "r").read()
 
         # Test success with correct prompt input using string
         self.environment_command.parse(["environment", "setup"])
@@ -159,7 +159,7 @@ class TestEnvironmentCommand():
         result = dummy(self)
         assert result
         assert os.path.isfile(definition_filepath)
-        assert "FROM datmo" in open(definition_filepath, "r").read()
+        assert "FROM prodat" in open(definition_filepath, "r").read()
 
         # Test with prompt input number out of range
         self.environment_command.parse(["environment", "setup"])
@@ -171,7 +171,7 @@ class TestEnvironmentCommand():
         result = dummy(self)
         assert result
         assert os.path.isfile(definition_filepath)
-        assert "FROM datmo/python-base:cpu-py27" in open(
+        assert "FROM prodat/python-base:cpu-py27" in open(
             definition_filepath, "r").read()
 
         # Test with prompt input string incorrect
@@ -244,7 +244,7 @@ class TestEnvironmentCommand():
 
         # Test option 2
         self.__set_variables()
-        random_dir = os.path.join(self.temp_dir, "random_datmo_dir")
+        random_dir = os.path.join(self.temp_dir, "random_prodat_dir")
         os.makedirs(random_dir)
         definition_filepath = os.path.join(random_dir, "Dockerfile")
         random_text = str(uuid.uuid1())
@@ -323,7 +323,7 @@ class TestEnvironmentCommand():
             failed = True
         assert failed
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_environment_delete(self):
         self.__set_variables()
         self.environment_command.parse(["environment", "create"])

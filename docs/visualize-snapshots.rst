@@ -1,7 +1,7 @@
 Visualizing Snapshots
 ==========================================
 
-In Datmo, :ref:`snapshots` are used as the primary record of state for a project, recording all components of a project state, including files, model weights, environment, configuration, stats, and other metadata. There are three primary ways to assess Snapshots using the CLI:
+In prodat, :ref:`snapshots` are used as the primary record of state for a project, recording all components of a project state, including files, model weights, environment, configuration, stats, and other metadata. There are three primary ways to assess Snapshots using the CLI:
 
 1. :ref:`view-all-snapshots`
 2. :ref:`inspect-a-single-snapshot`
@@ -13,9 +13,9 @@ In Datmo, :ref:`snapshots` are used as the primary record of state for a project
 View all Snapshots within a project
 ---------------------------------------------------
 
-If you'd like to see a broad overview of all snapshots in the current datmo project, the user can do so with:
+If you'd like to see a broad overview of all snapshots in the current prodat project, the user can do so with:
 
-    ``$ datmo snapshot ls``
+    ``$ prodat snapshot ls``
 
 This will return the metadata for all snapshots in a table that resembles the following format:
 
@@ -42,7 +42,7 @@ Inspect a single Snapshot
 
 If you'd like to see a detailed view of all properties pertaining to a specific snapshot, use:
 
-    ``$ datmo snapshot inspect <SNAPSHOT_ID>``
+    ``$ prodat snapshot inspect <SNAPSHOT_ID>``
 
 This will return a detailed view of the snapshot that resembles the following:
 
@@ -67,7 +67,7 @@ There will often be times where you want to see the difference between two snaps
 
 This is possible with the following command:
 
-    ``$ datmo snapshot diff <SNAPSHOT_ID_1> <SNAPSHOT_ID_2>``
+    ``$ prodat snapshot diff <SNAPSHOT_ID_1> <SNAPSHOT_ID_2>``
 
 Resulting in an output resembling the following:
 

@@ -1,9 +1,9 @@
 from sklearn import datasets
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-import datmo # extra line
+import prodat # extra line
 
-# Run `$ datmo init` in your terminal to instantiate a Datmo project
+# Run `$ prodat init` in your terminal to instantiate a prodat project
 
 config = { "solver": "newton-cg" } # extra line
 iris_dataset = datasets.load_iris()
@@ -18,4 +18,4 @@ print(train_acc)
 print(test_acc)
 
 stats = { "train_accuracy": train_acc, "test_accuracy": test_acc } # extra line
-datmo.snapshot.create(message="my first snapshot", config=config, stats=stats) # extra line
+prodat.snapshot.create(message="my first snapshot", config=config, stats=stats) # extra line

@@ -45,9 +45,9 @@ except NameError:
 
 from glob import glob
 
-from datmo.core.controller.environment.driver.dockerenv import DockerEnvironmentDriver
-from datmo.core.util.i18n import get as __
-from datmo.core.util.exceptions import (
+from prodat.core.controller.environment.driver.dockerenv import DockerEnvironmentDriver
+from prodat.core.util.i18n import get as __
+from prodat.core.util.exceptions import (
     PathDoesNotExist, MutuallyExclusiveArguments, RequiredArgumentMissing,
     EnvironmentConnectFailed, EnvironmentExecutionError,
     InvalidDestinationName, TooManyArgumentsFound)
@@ -215,14 +215,14 @@ def parameterized(dec):
     return layer
 
 def is_project_dir(path):
-    return ".datmo" in os.listdir(path) and os.path.isdir(
-        os.path.join(path, ".datmo"))
+    return ".prodat" in os.listdir(path) and os.path.isdir(
+        os.path.join(path, ".prodat"))
 
 # TODO: add test
-def check_docker_inactive(filepath, datmo_directory_name):
+def check_docker_inactive(filepath, prodat_directory_name):
     try:
         test = DockerEnvironmentDriver(
-            root=filepath, datmo_directory_name=datmo_directory_name)
+            root=filepath, prodat_directory_name=prodat_directory_name)
         test.connect()
         definition_path = os.path.join(filepath, "Dockerfile")
         if platform.system() == "Windows":
@@ -237,8 +237,8 @@ def check_docker_inactive(filepath, datmo_directory_name):
 # TODO: add test
 def pytest_docker_environment_failed_instantiation(filepath):
     return pytest.mark.skipif(
-        # TODO: abstract the "datmo_directory_name"
-        check_docker_inactive(filepath, ".datmo"),
+        # TODO: abstract the "prodat_directory_name"
+        check_docker_inactive(filepath, ".prodat"),
         reason="a running environment could not be instantiated")
 
 def parse_cli_key_value(cli_string, default_key):
@@ -289,12 +289,12 @@ def list_all_filepaths(absolute_dirpath):
         for file in filenames
     ]
 
-def get_datmo_temp_path(filepath):
-    # Create temp directory within .datmo/tmp
-    datmo_temp_path = os.path.join(filepath, ".datmo", "tmp")
-    if not os.path.exists(datmo_temp_path):
-        os.makedirs(datmo_temp_path)
-    return tempfile.mkdtemp(dir=datmo_temp_path)
+def get_prodat_temp_path(filepath):
+    # Create temp directory within .prodat/tmp
+    prodat_temp_path = os.path.join(filepath, ".prodat", "tmp")
+    if not os.path.exists(prodat_temp_path):
+        os.makedirs(prodat_temp_path)
+    return tempfile.mkdtemp(dir=prodat_temp_path)
 
 def parse_path(path):
     """Parse user given path
@@ -426,11 +426,11 @@ class bcolors:
 
 class Commands(object):
     def __init__(self):
-        from datmo.core.util.logger import DatmoLogger
-        from datmo.config import Config
+        from prodat.core.util.logger import prodatLogger
+        from prodat.config import Config
         self.config = Config()
         self.docker_cli = self.config.docker_cli
-        self.log = DatmoLogger.get_logger(__name__)
+        self.log = prodatLogger.get_logger(__name__)
         self.log.info("handling command %s", self.config.home)
 
     def run_cmd(self, shell_cmd):
@@ -493,7 +493,7 @@ class Commands(object):
                     relative_path = absolute_path.replace(folder_path, '')
                     zip_file.write(absolute_path, relative_path)
                 for file_name in files:
-                    if file_name != 'datmo_model.zip':
+                    if file_name != 'prodat_model.zip':
                         absolute_path = os.path.join(root, file_name)
                         relative_path = absolute_path.replace(folder_path, '')
                         zip_file.write(absolute_path, relative_path)
@@ -512,7 +512,7 @@ class Commands(object):
         finally:
             zip_file.close()
 
-    def create_datmo_dockerfile(self,
+    def create_prodat_dockerfile(self,
                                 dockerfile='Dockerfile',
                                 filepath=os.getcwd()):
         """
@@ -523,7 +523,7 @@ class Commands(object):
             os.path.dirname(os.path.abspath(__file__)), 'src_files')
 
         # Combine dockerfiles
-        destination = open(os.path.join(filepath, 'datmoDockerfile'), 'wb')
+        destination = open(os.path.join(filepath, 'prodatDockerfile'), 'wb')
         shutil.copyfileobj(
             open(os.path.join(filepath, dockerfile), 'rb'), destination)
         shutil.copyfileobj(

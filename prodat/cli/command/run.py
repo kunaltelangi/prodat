@@ -10,15 +10,15 @@ try:
 except NameError:
     str = str
 
-from datmo.core.util.i18n import get as __
-from datmo.core.util.misc_functions import mutually_exclusive, printable_object
-from datmo.cli.command.project import ProjectCommand
-from datmo.core.controller.task import TaskController
-from datmo.core.controller.snapshot import SnapshotController
-from datmo.cli.driver.helper import Helper
-from datmo.core.entity.run import Run
-from datmo.core.util.exceptions import RequiredArgumentMissing
-from datmo.core.util.misc_functions import prettify_datetime
+from prodat.core.util.i18n import get as __
+from prodat.core.util.misc_functions import mutually_exclusive, printable_object
+from prodat.cli.command.project import ProjectCommand
+from prodat.core.controller.task import TaskController
+from prodat.core.controller.snapshot import SnapshotController
+from prodat.cli.driver.helper import Helper
+from prodat.core.entity.run import Run
+from prodat.core.util.exceptions import RequiredArgumentMissing
+from prodat.core.util.misc_functions import prettify_datetime
 
 class RunCommand(ProjectCommand):
     def __init__(self, cli_helper):

@@ -10,35 +10,35 @@ try:
 except NameError:
     to_unicode = str
 
-from datmo.core.util.misc_functions import list_all_filepaths
-from datmo.core.util.i18n import get as __
-from datmo.core.util.exceptions import (PathDoesNotExist, FileIOError,
+from prodat.core.util.misc_functions import list_all_filepaths
+from prodat.core.util.i18n import get as __
+from prodat.core.util.exceptions import (PathDoesNotExist, FileIOError,
                                         UnstagedChanges, CodeNotInitialized,
                                         CommitDoesNotExist)
-from datmo.core.controller.code.driver import CodeDriver
+from prodat.core.controller.code.driver import CodeDriver
 
 class FileCodeDriver(CodeDriver):
     """File-based Code Driver handles source control management for the project with files
     """
 
-    def __init__(self, root, datmo_directory_name):
+    def __init__(self, root, prodat_directory_name):
         super(FileCodeDriver, self).__init__()
         self.root = root
         # Check if filepath exists
         if not os.path.exists(self.root):
             raise PathDoesNotExist(
                 __("error", "controller.code.driver.git.__init__.dne", root))
-        self._datmo_directory_name = datmo_directory_name
-        self._datmo_directory_path = os.path.join(self.root,
-                                                  self._datmo_directory_name)
-        self._code_filepath = os.path.join(self._datmo_directory_path, "code")
-        self._datmo_ignore_filepath = os.path.join(self.root, ".datmoignore")
+        self._prodat_directory_name = prodat_directory_name
+        self._prodat_directory_path = os.path.join(self.root,
+                                                  self._prodat_directory_name)
+        self._code_filepath = os.path.join(self._prodat_directory_path, "code")
+        self._prodat_ignore_filepath = os.path.join(self.root, ".prodatignore")
         self._is_initialized = self.is_initialized
         self.type = "file"
 
     @property
     def is_initialized(self):
-        if os.path.isdir(self._datmo_directory_path) and \
+        if os.path.isdir(self._prodat_directory_path) and \
             os.path.isdir(self._code_filepath):
             self._is_initialized = True
             return self._is_initialized
@@ -54,8 +54,8 @@ class FileCodeDriver(CodeDriver):
     def _get_tracked_files(self):
         """Return list of tracked files relative to the root directory
 
-        This will look through all of the files and will exclude any datmo directories
-        (.datmo) and any paths included in .datmoignore
+        This will look through all of the files and will exclude any prodat directories
+        (.prodat) and any paths included in .prodatignore
         TODO: add general list of directories to ignore here (should be passed in by higher level code)
 
         Returns
@@ -65,23 +65,23 @@ class FileCodeDriver(CodeDriver):
         """
         all_files = set(list_all_filepaths(self.root))
 
-        # Ignore the .datmo/ folder and all contents within it
+        # Ignore the .prodat/ folder and all contents within it
         spec = pathspec.PathSpec.from_lines('gitwildmatch',
-                                            [self._datmo_directory_name])
-        dot_datmo_files = set(spec.match_tree(self.root))
+                                            [self._prodat_directory_name])
+        dot_prodat_files = set(spec.match_tree(self.root))
 
         # Ignore the .git/ folder and all contents within it
         spec = pathspec.PathSpec.from_lines('gitwildmatch', [".git"])
         dot_git_files = set(spec.match_tree(self.root))
 
-        # Load ignored files from .datmoignore file if exi
-        datmoignore_files = {".datmoignore"}
-        if os.path.isfile(os.path.join(self.root, ".datmoignore")):
-            with open(self._datmo_ignore_filepath, "r") as f:
+        # Load ignored files from .prodatignore file if exi
+        prodatignore_files = {".prodatignore"}
+        if os.path.isfile(os.path.join(self.root, ".prodatignore")):
+            with open(self._prodat_ignore_filepath, "r") as f:
                 spec = pathspec.PathSpec.from_lines('gitignore', f)
-                datmoignore_files.update(set(spec.match_tree(self.root)))
+                prodatignore_files.update(set(spec.match_tree(self.root)))
         return list(
-            all_files - dot_datmo_files - dot_git_files - datmoignore_files)
+            all_files - dot_prodat_files - dot_git_files - prodatignore_files)
 
     def _calculate_commit_hash(self, tracked_files):
         """Return the commit hash of the repository"""
@@ -147,7 +147,7 @@ class FileCodeDriver(CodeDriver):
         return self._calculate_commit_hash(tracked_filepaths)
 
     def create_ref(self, commit_id=None):
-        """Add all files except for those in .datmoignore, and make a commit
+        """Add all files except for those in .prodatignore, and make a commit
 
         If the commit_id is given, it will return the same commit_id or error
 

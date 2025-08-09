@@ -25,8 +25,8 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.core.controller.code.driver.file import FileCodeDriver
-from datmo.core.util.exceptions import PathDoesNotExist, FileIOError, CodeNotInitialized, UnstagedChanges, CommitDoesNotExist
+from prodat.core.controller.code.driver.file import FileCodeDriver
+from prodat.core.util.exceptions import PathDoesNotExist, FileIOError, CodeNotInitialized, UnstagedChanges, CommitDoesNotExist
 
 class TestFileCodeDriver():
     """
@@ -37,11 +37,11 @@ class TestFileCodeDriver():
         # provide mountable tmp directory for docker
         tempfile.tempdir = "/tmp" if not platform.system(
         ) == "Windows" else None
-        test_datmo_dir = os.environ.get('TEST_DATMO_DIR',
+        test_prodat_dir = os.environ.get('TEST_prodat_DIR',
                                         tempfile.gettempdir())
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         self.file_code_driver = FileCodeDriver(
-            root=self.temp_dir, datmo_directory_name=".datmo")
+            root=self.temp_dir, prodat_directory_name=".prodat")
 
     def teardown_method(self):
         pass
@@ -53,7 +53,7 @@ class TestFileCodeDriver():
         failed = False
         try:
             _ = FileCodeDriver(
-                root="nonexistant_path", datmo_directory_name=".datmo")
+                root="nonexistant_path", prodat_directory_name=".prodat")
         except PathDoesNotExist:
             failed = True
         assert failed
@@ -62,9 +62,9 @@ class TestFileCodeDriver():
         # test if code manager is initialized
         self.file_code_driver.init()
         assert self.file_code_driver.is_initialized == True
-        # test if code folder is removed from .datmo folder
+        # test if code folder is removed from .prodat folder
         self._code_filepath = os.path.join(
-            self.file_code_driver._datmo_directory_path, "code")
+            self.file_code_driver._prodat_directory_path, "code")
         shutil.rmtree(self._code_filepath)
         assert self.file_code_driver.is_initialized == False
 
@@ -76,7 +76,7 @@ class TestFileCodeDriver():
     def test_init_then_instantiation(self):
         self.file_code_driver.init()
         another_file_code_manager = FileCodeDriver(
-            root=self.temp_dir, datmo_directory_name=".datmo")
+            root=self.temp_dir, prodat_directory_name=".prodat")
         result = another_file_code_manager.is_initialized
         assert result == True
 
@@ -87,25 +87,25 @@ class TestFileCodeDriver():
 
     def test_tracked_files(self):
         self.__setup()
-        # Test if catches file (no .datmoignore)
+        # Test if catches file (no .prodatignore)
         result = self.file_code_driver._get_tracked_files()
         assert result == ["test.txt"]
 
-        # Test if catches multiple files (no .datmoignore)
+        # Test if catches multiple files (no .prodatignore)
         with open(os.path.join(self.temp_dir, "test2.txt"), "wb") as f:
             f.write(to_bytes("hello"))
         result = self.file_code_driver._get_tracked_files()
         for item in result:
             assert item in ["test.txt", "test2.txt"]
 
-        # Test if it ignores any .datmo directory or files within
+        # Test if it ignores any .prodat directory or files within
         with open(
-                os.path.join(self.file_code_driver._datmo_directory_path,
+                os.path.join(self.file_code_driver._prodat_directory_path,
                              "test"), "wb") as f:
             f.write(to_bytes("cool"))
         result = self.file_code_driver._get_tracked_files()
         for item in result:
-            assert os.path.join(self.file_code_driver._datmo_directory_name,
+            assert os.path.join(self.file_code_driver._prodat_directory_name,
                                 "test") not in item
             assert item in ["test.txt", "test2.txt"]
 
@@ -119,7 +119,7 @@ class TestFileCodeDriver():
             assert item in ["test.txt", "test2.txt"]
 
         # Test if ignores one file and only shows one
-        with open(os.path.join(self.temp_dir, ".datmoignore"), "wb") as f:
+        with open(os.path.join(self.temp_dir, ".prodatignore"), "wb") as f:
             f.write(to_bytes("test.txt"))
         result = self.file_code_driver._get_tracked_files()
         assert result == ["test2.txt"]

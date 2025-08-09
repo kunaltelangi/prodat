@@ -17,19 +17,19 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.config import Config
-from datmo.core.controller.project import ProjectController
-from datmo.core.controller.snapshot import SnapshotController
-from datmo.core.util.exceptions import CommitDoesNotExist
+from prodat.config import Config
+from prodat.core.controller.project import ProjectController
+from prodat.core.controller.snapshot import SnapshotController
+from prodat.core.util.exceptions import CommitDoesNotExist
 
 class TestSnapshotController():
     def setup_method(self):
         # provide mountable tmp directory for docker
         tempfile.tempdir = "/tmp" if not platform.system(
         ) == "Windows" else None
-        test_datmo_dir = os.environ.get('TEST_DATMO_DIR',
+        test_prodat_dir = os.environ.get('TEST_prodat_DIR',
                                         tempfile.gettempdir())
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         Config().set_home(self.temp_dir)
 
         self.project = ProjectController()

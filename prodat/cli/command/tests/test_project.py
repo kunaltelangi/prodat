@@ -26,24 +26,24 @@ import tempfile
 import platform
 import timeout_decorator
 
-from datmo.config import Config
-from datmo import __version__
-from datmo.cli.driver.helper import Helper
-from datmo.cli.command.project import ProjectCommand
-from datmo.cli.command.snapshot import SnapshotCommand
-from datmo.core.entity.snapshot import Snapshot
-from datmo.cli.command.run import RunCommand
-from datmo.core.controller.task import TaskController
-from datmo.core.util.exceptions import UnrecognizedCLIArgument
-from datmo.core.util.misc_functions import pytest_docker_environment_failed_instantiation
+from prodat.config import Config
+from prodat import __version__
+from prodat.cli.driver.helper import Helper
+from prodat.cli.command.project import ProjectCommand
+from prodat.cli.command.snapshot import SnapshotCommand
+from prodat.core.entity.snapshot import Snapshot
+from prodat.cli.command.run import RunCommand
+from prodat.core.controller.task import TaskController
+from prodat.core.util.exceptions import UnrecognizedCLIArgument
+from prodat.core.util.misc_functions import pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestProjectCommand():
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
         Config().set_home(self.temp_dir)
         self.cli_helper = Helper()
         self.project_command = ProjectCommand(self.cli_helper)
@@ -73,7 +73,7 @@ class TestProjectCommand():
             self.project_command.project_controller.environment_driver.
             environment_directory_path, "Dockerfile")
         assert os.path.isfile(definition_filepath)
-        assert "FROM datmo/python-base:cpu-py27" in open(
+        assert "FROM prodat/python-base:cpu-py27" in open(
             definition_filepath, "r").read()
 
     def test_init_create_success_force(self):
@@ -81,7 +81,7 @@ class TestProjectCommand():
 
         result = self.project_command.execute()
         assert result
-        assert os.path.exists(os.path.join(self.temp_dir, '.datmo'))
+        assert os.path.exists(os.path.join(self.temp_dir, '.prodat'))
 
     def test_init_create_success_no_environment(self):
         test_name = "foobar"
@@ -102,7 +102,7 @@ class TestProjectCommand():
 
         assert result
         assert not os.path.isfile(definition_filepath)
-        assert os.path.exists(os.path.join(self.temp_dir, '.datmo'))
+        assert os.path.exists(os.path.join(self.temp_dir, '.prodat'))
         assert result.name == test_name
         assert result.description == test_description
 
@@ -124,11 +124,11 @@ class TestProjectCommand():
 
         assert result
         assert os.path.isfile(definition_filepath)
-        assert "FROM datmo/python-base:cpu-py27" in open(
+        assert "FROM prodat/python-base:cpu-py27" in open(
             definition_filepath, "r").read()
 
         # test for desired side effects
-        assert os.path.exists(os.path.join(self.temp_dir, '.datmo'))
+        assert os.path.exists(os.path.join(self.temp_dir, '.prodat'))
         assert result.name == test_name
         assert result.description == test_description
 
@@ -160,7 +160,7 @@ class TestProjectCommand():
 
         result_2 = self.project_command.execute()
         # test for desired side effects
-        assert os.path.exists(os.path.join(self.temp_dir, '.datmo'))
+        assert os.path.exists(os.path.join(self.temp_dir, '.prodat'))
         assert result_2.id == result_1.id
 
     def test_init_update_success(self):
@@ -183,7 +183,7 @@ class TestProjectCommand():
 
         result_2 = dummy(self)
         # test for desired side effects
-        assert os.path.exists(os.path.join(self.temp_dir, '.datmo'))
+        assert os.path.exists(os.path.join(self.temp_dir, '.prodat'))
         assert result_2.id == result_1.id
         assert result_2.name == updated_name
         assert result_2.description == updated_description
@@ -209,7 +209,7 @@ class TestProjectCommand():
 
         result_2 = dummy(self)
         # test for desired side effects
-        assert os.path.exists(os.path.join(self.temp_dir, '.datmo'))
+        assert os.path.exists(os.path.join(self.temp_dir, '.prodat'))
         assert result_2.id == result_1.id
         assert result_2.name == updated_name
         assert result_2.description == result_1.description
@@ -235,7 +235,7 @@ class TestProjectCommand():
 
         result_2 = dummy(self)
         # test for desired side effects
-        assert os.path.exists(os.path.join(self.temp_dir, '.datmo'))
+        assert os.path.exists(os.path.join(self.temp_dir, '.prodat'))
         assert result_2.id == result_1.id
         assert result_2.name == result_1.name
         assert result_2.description == updated_description
@@ -319,7 +319,7 @@ class TestProjectCommand():
         assert not unstaged_environment
         assert not unstaged_files
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_status_autogenerated_snapshot(self):
         test_name = "foobar"
         test_description = "test model"
@@ -534,7 +534,7 @@ class TestProjectCommand():
             return self.project_command.execute()
 
         result = dummy(self)
-        assert not os.path.exists(os.path.join(self.temp_dir, '.datmo'))
+        assert not os.path.exists(os.path.join(self.temp_dir, '.prodat'))
         assert isinstance(result, bool)
         assert result
 
@@ -546,7 +546,7 @@ class TestProjectCommand():
             exception_thrown = True
         assert exception_thrown
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_dashboard(self):
         # test dashboard command
         self.project_command.parse(["dashboard"])

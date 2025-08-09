@@ -1,17 +1,17 @@
 import os
 
-from datmo.core.controller.snapshot import SnapshotController
-from datmo.core.entity.snapshot import Snapshot as CoreSnapshot
-from datmo.core.util.exceptions import InvalidArgumentType, \
+from prodat.core.controller.snapshot import SnapshotController
+from prodat.core.entity.snapshot import Snapshot as CoreSnapshot
+from prodat.core.util.exceptions import InvalidArgumentType, \
     SnapshotCreateFromTaskArgs
-from datmo.core.util.misc_functions import prettify_datetime, format_table
+from prodat.core.util.misc_functions import prettify_datetime, format_table
 
 class Snapshot():
     """Snapshot is an entity object to enable user access to properties
 
     Parameters
     ----------
-    snapshot_entity : datmo.core.entity.snapshot.Snapshot
+    snapshot_entity : prodat.core.entity.snapshot.Snapshot
         core snapshot entity to reference
 
     Attributes
@@ -73,7 +73,7 @@ class Snapshot():
 
         Returns
         -------
-        datmo.core.entity.snapshot.Snapshot
+        prodat.core.entity.snapshot.Snapshot
             core snapshot object for the snapshot
         """
         snapshot_controller = SnapshotController()
@@ -144,7 +144,7 @@ def create(message,
     The project must be created before this is implemented. You can do that by using
     the following command::
 
-        $ datmo init
+        $ prodat init
 
     Parameters
     ----------
@@ -196,14 +196,14 @@ def create(message,
     --------
     You can use this function within a project repository to save snapshots
     for later use. Once you have created this, you will be able to view the
-    snapshot with the `datmo snapshot ls` cli command
+    snapshot with the `prodat snapshot ls` cli command
 
-    >>> import datmo
-    >>> datmo.snapshot.create(message="my first snapshot", paths=["/path/to/a/large/file"], config={"test": 0.4, "test2": "string"}, stats={"accuracy": 0.94})
+    >>> import prodat
+    >>> prodat.snapshot.create(message="my first snapshot", paths=["/path/to/a/large/file"], config={"test": 0.4, "test2": "string"}, stats={"accuracy": 0.94})
 
     You can also use the result of a task run in order to create a snapshot
 
-    >>> datmo.snapshot.create(message="my first snapshot from task", task_id="1jfkshg049")
+    >>> prodat.snapshot.create(message="my first snapshot from task", task_id="1jfkshg049")
     """
 
     snapshot_controller = SnapshotController()
@@ -260,7 +260,7 @@ def ls(filter=None):
     The project must be created before this is implemented. You can do that by using
     the following command::
 
-        $ datmo init
+        $ prodat init
 
     Parameters
     ----------
@@ -277,8 +277,8 @@ def ls(filter=None):
     --------
     You can use this function within a project repository to list snapshots.
 
-    >>> import datmo
-    >>> snapshots = datmo.snapshot.ls()
+    >>> import prodat
+    >>> snapshots = prodat.snapshot.ls()
     """
 
     snapshot_controller = SnapshotController()
@@ -316,7 +316,7 @@ def update(snapshot_id=None, config=None, stats=None, message=None,
     The project must be created before this is implemented. You can do that by using
     the following command::
 
-        $ datmo init
+        $ prodat init
 
     Parameters
     ----------
@@ -344,8 +344,8 @@ def update(snapshot_id=None, config=None, stats=None, message=None,
     --------
     You can use this function within a project repository to update a snapshot.
 
-    >>> import datmo
-    >>> snapshots = datmo.snapshot.update(snapshot_id="4L24adFfsa", config={"depth": "10", "learning_rate": "0.91"},
+    >>> import prodat
+    >>> snapshots = prodat.snapshot.update(snapshot_id="4L24adFfsa", config={"depth": "10", "learning_rate": "0.91"},
     ...          stats={"acc": "91.34", "f1_score": "0.91"}, message="new message", label="best")
     """
     snapshot_controller = SnapshotController()
@@ -363,7 +363,7 @@ def delete(snapshot_id=None):
     The project must be created before this is implemented. You can do that by using
     the following command::
 
-        $ datmo init
+        $ prodat init
 
     Parameters
     ----------
@@ -379,8 +379,8 @@ def delete(snapshot_id=None):
     --------
     You can use this function within a project repository to delete a snapshot.
 
-    >>> import datmo
-    >>> datmo.snapshot.delete(snapshot_id="4L24adFfsa")
+    >>> import prodat
+    >>> prodat.snapshot.delete(snapshot_id="4L24adFfsa")
     """
     snapshot_controller = SnapshotController()
 

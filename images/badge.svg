@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="100px" height="20px" viewBox="0 0 100 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <!-- Generator: Sketch 44.1 (41455) - http://www.bohemiancoding.com/sketch -->
-    <title>datmo_badge</title>
+    <title>prodat_badge</title>
     <desc>Created with Sketch.</desc>
     <defs>
         <rect id="path-1" x="0" y="0" width="100" height="20" rx="3"></rect>
@@ -20,7 +20,7 @@
         </filter>
     </defs>
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="datmo_badge">
+        <g id="prodat_badge">
             <g id="Clipped">
                 <mask id="mask-2" fill="white">
                     <use xlink:href="#path-1"></use>
@@ -33,11 +33,11 @@
                 </g>
             </g>
             <g id="Group" filter="url(#filter-4)" transform="translate(9.000000, 3.000000)" font-family="Verdana" font-size="11" font-weight="normal">
-                <text id="datmo" fill-opacity="0.3" fill="#010101">
-                    <tspan x="0" y="11">datmo</tspan>
+                <text id="prodat" fill-opacity="0.3" fill="#010101">
+                    <tspan x="0" y="11">prodat</tspan>
                 </text>
-                <text id="datmo" fill="#FFFFFF">
-                    <tspan x="0" y="10">datmo</tspan>
+                <text id="prodat" fill="#FFFFFF">
+                    <tspan x="0" y="10">prodat</tspan>
                 </text>
                 <text id="model" fill-opacity="0.3" fill="#010101">
                     <tspan x="49" y="11">model</tspan>

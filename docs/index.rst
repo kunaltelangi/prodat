@@ -1,7 +1,7 @@
-Welcome to Datmo's documentation!
+Welcome to prodat's documentation!
 ===================================
 
-Datmo is an open source model tracking and reproducibility tool for developers. 
+prodat is an open source model tracking and reproducibility tool for developers. 
 
 Features
 -------------
@@ -36,9 +36,9 @@ Indices and tables
 * :ref:`search`
 
 
-.. image:: https://badge.fury.io/py/datmo.svg
-    :target: https://badge.fury.io/py/datmo
-.. image:: https://travis-ci.org/datmo/datmo.svg?branch=master
-    :target: https://travis-ci.org/datmo/datmo
-.. image:: https://coveralls.io/repos/github/datmo/datmo/badge.svg
-    :target: https://coveralls.io/github/datmo/datmo
+.. image:: https://badge.fury.io/py/prodat.svg
+    :target: https://badge.fury.io/py/prodat
+.. image:: https://travis-ci.org/prodat/prodat.svg?branch=master
+    :target: https://travis-ci.org/prodat/prodat
+.. image:: https://coveralls.io/repos/github/prodat/prodat/badge.svg
+    :target: https://coveralls.io/github/prodat/prodat

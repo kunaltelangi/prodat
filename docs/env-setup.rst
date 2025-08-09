@@ -1,7 +1,7 @@
 Setting Up Your Environment
 ===================================
 
-In Datmo, there are three ways to setup an environment:
+In prodat, there are three ways to setup an environment:
 
 1. :ref:`using-default`
 2. :ref:`adding-to-default`
@@ -14,7 +14,7 @@ In Datmo, there are three ways to setup an environment:
 Using a Default Environment
 ------------------------------
 
-Default Datmo environments are maintained by the Datmo team and are guaranteed to work out of the box. We've provided many of the most popular environments for data science and AI, including:
+Default prodat environments are maintained by the prodat team and are guaranteed to work out of the box. We've provided many of the most popular environments for data science and AI, including:
 
 - data-analytics (general data science/computational programming)
 - kaggle
@@ -24,8 +24,8 @@ Default Datmo environments are maintained by the Datmo team and are guaranteed t
 - caffe2
 - base R and Python
 
-You can setup a Datmo default environment either by saying yes when prompted at time of project initialization with ``$ datmo init``,
-or at any point in time by selecting a provided environment from ``$ datmo environment setup``.
+You can setup a prodat default environment either by saying yes when prompted at time of project initialization with ``$ prodat init``,
+or at any point in time by selecting a provided environment from ``$ prodat environment setup``.
 
 -----
 
@@ -37,11 +37,11 @@ Adding to a Default Environment
 There are instances where you may want to add additional components to your environment. A common example would be installing additional language-level packages that weren't included in the default environment.
 
 1. To do this, first setup your default environment in one of two ways:
-    - If you haven't yet initialized a project, use ``$ datmo init``
-    - Otherwise, use ``$ datmo environment setup``
+    - If you haven't yet initialized a project, use ``$ prodat init``
+    - Otherwise, use ``$ prodat environment setup``
 
 2. Once you've followed the prompts and selected the default environment to setup, you can find the environment file at:
-    ``PROJECT-DIR/datmo_environment/Dockerfile``
+    ``PROJECT-DIR/prodat_environment/Dockerfile``
 
 3. **Open the Dockerfile in a text/code editor**
 
@@ -73,26 +73,26 @@ There are instances where you may want to add additional components to your envi
 Bringing Your Own Environment
 ---------------------------------
 
-There are two ways to write your own enviornment: with or without a Datmo base image.
+There are two ways to write your own enviornment: with or without a prodat base image.
 
-Datmo base images aim to efficiently serve as a foundation for environments, including an operating system, necessary system level drivers, as well as a programming language, package, and workspaces. Datmo base images are tested and reliable, but the user has the option to bring their own as well if they would prefer.
+prodat base images aim to efficiently serve as a foundation for environments, including an operating system, necessary system level drivers, as well as a programming language, package, and workspaces. prodat base images are tested and reliable, but the user has the option to bring their own as well if they would prefer.
 
-**A) With a datmo base image:**
+**A) With a prodat base image:**
 
 We have created public base images for all permutations of the following:
     - Languages: Python 2.7, Python 3.5, R
     - System Drivers: CPU, GPU (nvidia)
 
 
-The datmo team maintains these images and ensures they will serve as a stable base for building environments on top of. To use one of them, you'll need to call one of them using ``FROM`` at the top of the Dockerfile.
+The prodat team maintains these images and ensures they will serve as a stable base for building environments on top of. To use one of them, you'll need to call one of them using ``FROM`` at the top of the Dockerfile.
 
-**1. Open a blank text file, and save it with the name** ``Dockerfile`` **in the** ``/datmo_environment`` **directory**
+**1. Open a blank text file, and save it with the name** ``Dockerfile`` **in the** ``/prodat_environment`` **directory**
 
 **2. Designate a base image**
 
 At the top of your Dockerfile, you will need a line of the following format:
 
-    ``FROM datmo/python-base:z``
+    ``FROM prodat/python-base:z``
 
     .. note::
         
@@ -100,16 +100,16 @@ At the top of your Dockerfile, you will need a line of the following format:
 
 
     Examples of valid dockerfile names would be as follows (list is not exhaustive):
-        i. datmo/python-base:py35-cpu
-        ii. datmo/python-base:py35-gpu
-        iii. datmo/python-base:py27-cpu
-        iv. datmo/python-base:py27-gpu
+        i. prodat/python-base:py35-cpu
+        ii. prodat/python-base:py35-gpu
+        iii. prodat/python-base:py27-cpu
+        iv. prodat/python-base:py27-gpu
 
-    To see the full list of officially supported Python environment versions, check out the `Dockerhub page here <https://hub.docker.com/r/datmo/python-base/tags/>`_.
+    To see the full list of officially supported Python environment versions, check out the `Dockerhub page here <https://hub.docker.com/r/prodat/python-base/tags/>`_.
 
 **3. Designate installation of system level packages**
 
-All base datmo environments utilize Ubuntu, so the ``apt-get`` package tool will be used to install any necessary system dependencies. 
+All base prodat environments utilize Ubuntu, so the ``apt-get`` package tool will be used to install any necessary system dependencies. 
 
 In your Dockerfile, enumerate all system level packages with the following:
 
@@ -122,7 +122,7 @@ In your Dockerfile, enumerate all system level packages with the following:
 
 **4. Designate installation of language level packages**
 
-Most languages leverage some sort of package management tool. For example, Python utilizes pip, and is included in all python base datmo images.
+Most languages leverage some sort of package management tool. For example, Python utilizes pip, and is included in all python base prodat images.
 
 To utilize your package manager to install packages through the Dockerfile, use the following line:
 
@@ -134,9 +134,9 @@ To utilize your package manager to install packages through the Dockerfile, use 
 
 -----
 
-**B) Without a datmo base image:**
+**B) Without a prodat base image:**
  
-**1. Open a blank text file, and save it with the name** ``Dockerfile`` **in the** ``/datmo_environment`` **directory**
+**1. Open a blank text file, and save it with the name** ``Dockerfile`` **in the** ``/prodat_environment`` **directory**
 
 **2. Designate a base image**
 
@@ -178,11 +178,11 @@ To utilize your language-level package manager to install packages through the D
         For installing multiple language-level packages, follow the same guidelines listed above in the step 3 note.
 
 
-**5. Getting datmo workspaces to work with your custom environment**
+**5. Getting prodat workspaces to work with your custom environment**
 
-By running a fully custom environment image, you will need to add code snippets to your Dockerfile in order for some of datmo's aliases to work. Please make sure you have installed ``pip`` and ``apt-get`` during step 3.
+By running a fully custom environment image, you will need to add code snippets to your Dockerfile in order for some of prodat's aliases to work. Please make sure you have installed ``pip`` and ``apt-get`` during step 3.
 
-**Jupyter Notebook** via ``$ datmo notebook``
+**Jupyter Notebook** via ``$ prodat notebook``
     
     i. Add the following code snippet to your Dockerfile
 
@@ -210,9 +210,9 @@ By running a fully custom environment image, you will need to add code snippets 
      EXPOSE 8888
 
 
-    ii. Download the 3 patchfiles from `here <https://github.com/datmo/docker-files/tree/master/workspace-patches>`_ and move them into your ``datmo_environment`` folder along with your Dockerfile.
+    ii. Download the 3 patchfiles from `here <https://github.com/prodat/docker-files/tree/master/workspace-patches>`_ and move them into your ``prodat_environment`` folder along with your Dockerfile.
 
-**JupyterLab** via ``$ datmo jupyterlab``
+**JupyterLab** via ``$ prodat jupyterlab``
     
     i. Add the following code snippet to your Dockerfile
 
@@ -244,9 +244,9 @@ By running a fully custom environment image, you will need to add code snippets 
 
 
 
-    ii. Download the 3 patchfiles from `here <https://github.com/datmo/docker-files/tree/master/workspace-patches>`_ and move them into your ``datmo_environment`` folder along with your Dockerfile.
+    ii. Download the 3 patchfiles from `here <https://github.com/prodat/docker-files/tree/master/workspace-patches>`_ and move them into your ``prodat_environment`` folder along with your Dockerfile.
 
-**RStudio** via ``$ datmo rstudio``
+**RStudio** via ``$ prodat rstudio``
     
     i. Add the following code snippet to your Dockerfile
 
@@ -290,4 +290,4 @@ By running a fully custom environment image, you will need to add code snippets 
 
 
 
-    ii. Download the 3 patchfiles from `here <https://github.com/datmo/docker-files/tree/master/workspace-patches>`_ and move them into your ``datmo_environment`` folder along with your Dockerfile.
+    ii. Download the 3 patchfiles from `here <https://github.com/prodat/docker-files/tree/master/workspace-patches>`_ and move them into your ``prodat_environment`` folder along with your Dockerfile.

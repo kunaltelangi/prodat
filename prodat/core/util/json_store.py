@@ -19,7 +19,7 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.core.util.exceptions import (SaveSettingError, FileIOError)
+from prodat.core.util.exceptions import (SaveSettingError, FileIOError)
 
 class JSONStore():
     # TODO:  add file locking

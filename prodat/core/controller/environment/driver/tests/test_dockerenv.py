@@ -33,17 +33,17 @@ except TypeError:
 
     to_bytes("test")
 
-from datmo.core.controller.environment.driver.dockerenv import DockerEnvironmentDriver
-from datmo.core.util.exceptions import (
+from prodat.core.controller.environment.driver.dockerenv import DockerEnvironmentDriver
+from prodat.core.util.exceptions import (
     EnvironmentInitFailed, EnvironmentConnectFailed, FileAlreadyExistsError,
     EnvironmentRequirementsCreateError, EnvironmentImageNotFound,
     EnvironmentContainerNotFound, PathDoesNotExist, EnvironmentDoesNotExist,
     EnvironmentExecutionError)
-from datmo.core.util.misc_functions import check_docker_inactive, pytest_docker_environment_failed_instantiation
+from prodat.core.util.misc_functions import check_docker_inactive, pytest_docker_environment_failed_instantiation
 
 # provide mountable tmp directory for docker
 tempfile.tempdir = "/tmp" if not platform.system() == "Windows" else None
-test_datmo_dir = os.environ.get('TEST_DATMO_DIR', tempfile.gettempdir())
+test_prodat_dir = os.environ.get('TEST_prodat_DIR', tempfile.gettempdir())
 
 class TestDockerEnv():
     # TODO: Add more cases for each test
@@ -52,13 +52,13 @@ class TestDockerEnv():
     """
 
     def setup_method(self):
-        self.temp_dir = tempfile.mkdtemp(dir=test_datmo_dir)
-        # Ensure the ".datmo" directory is there (this is ensured by higher level functions
+        self.temp_dir = tempfile.mkdtemp(dir=test_prodat_dir)
+        # Ensure the ".prodat" directory is there (this is ensured by higher level functions
         # in practice
-        os.makedirs(os.path.join(self.temp_dir, ".datmo"))
+        os.makedirs(os.path.join(self.temp_dir, ".prodat"))
         # Test the default parameters
         self.docker_environment_driver = \
-            DockerEnvironmentDriver(self.temp_dir, ".datmo")
+            DockerEnvironmentDriver(self.temp_dir, ".prodat")
         self.image_name = str(uuid.uuid1())
         self.random_text = str(uuid.uuid1())
         self.dockerfile_path = os.path.join(self.temp_dir, "Dockerfile")
@@ -67,8 +67,8 @@ class TestDockerEnv():
             f.write(to_bytes(str("RUN echo " + self.random_text)))
 
     def teardown_method(self):
-        # TODO: abstract the datmo_directory_name
-        if not check_docker_inactive(test_datmo_dir, ".datmo"):
+        # TODO: abstract the prodat_directory_name
+        if not check_docker_inactive(test_prodat_dir, ".prodat"):
             self.docker_environment_driver.remove(self.image_name, force=True)
 
     def test_instantiation(self):
@@ -77,7 +77,7 @@ class TestDockerEnv():
         assert self.docker_environment_driver.docker_execpath == "docker"
         
         # Check if Docker tests are skipped
-        skip_docker_tests = os.environ.get("DATMO_SKIP_DOCKER_TESTS", "0").lower() in ["1", "true", "yes"]
+        skip_docker_tests = os.environ.get("prodat_SKIP_DOCKER_TESTS", "0").lower() in ["1", "true", "yes"]
         
         if not skip_docker_tests:
             assert self.docker_environment_driver.client is not None
@@ -92,14 +92,14 @@ class TestDockerEnv():
 
     def test_init_failed(self):
         thrown = False
-        shutil.rmtree(os.path.join(self.temp_dir, ".datmo"))
+        shutil.rmtree(os.path.join(self.temp_dir, ".prodat"))
         try:
             self.docker_environment_driver.init()
         except EnvironmentInitFailed:
             thrown = True
         assert thrown
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_connect_success(self):
         result = self.docker_environment_driver.connect()
         assert result and \
@@ -109,7 +109,7 @@ class TestDockerEnv():
         thrown = False
         try:
             test = DockerEnvironmentDriver(
-                self.temp_dir, ".datmo", docker_socket="unix:///var/run/fooo")
+                self.temp_dir, ".prodat", docker_socket="unix:///var/run/fooo")
             test.connect()
         except EnvironmentConnectFailed:
             thrown = True
@@ -209,20 +209,20 @@ class TestDockerEnv():
             options=options, definition_path=save_definition_path)
         definition_filepath = os.path.join(save_definition_path, "Dockerfile")
         assert result and os.path.isfile(definition_filepath) and \
-               "datmo" in open(definition_filepath, "r").read()
+               "prodat" in open(definition_filepath, "r").read()
 
     def test_create(self):
         input_dockerfile_path = os.path.join(
             self.docker_environment_driver.root, "Dockerfile")
         output_dockerfile_path = os.path.join(
-            self.docker_environment_driver.root, "datmoDockerfile")
+            self.docker_environment_driver.root, "prodatDockerfile")
         # Test both default values
         success, path, output_path = \
             self.docker_environment_driver.create()
 
         assert success and \
                os.path.isfile(output_dockerfile_path) and \
-               "datmo" in open(output_dockerfile_path, "r").read()
+               "prodat" in open(output_dockerfile_path, "r").read()
         assert path == input_dockerfile_path
         assert output_path == output_dockerfile_path
 
@@ -235,7 +235,7 @@ class TestDockerEnv():
 
         assert success and \
                os.path.isfile(output_dockerfile_path) and \
-               "datmo" in open(output_dockerfile_path, "r").read()
+               "prodat" in open(output_dockerfile_path, "r").read()
         assert path == input_dockerfile_path
         assert output_path == output_dockerfile_path
 
@@ -248,7 +248,7 @@ class TestDockerEnv():
                                                         output_dockerfile_path)
         assert success and \
                os.path.isfile(output_dockerfile_path) and \
-               "datmo" in open(output_dockerfile_path, "r").read()
+               "prodat" in open(output_dockerfile_path, "r").read()
         assert path == input_dockerfile_path
         assert output_path == output_dockerfile_path
 
@@ -266,7 +266,7 @@ class TestDockerEnv():
         open(output_dockerfile_path, "r").close()
         os.remove(output_dockerfile_path)
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_build(self):
         # connect to daemon
         result = self.docker_environment_driver.build(self.image_name,
@@ -275,7 +275,7 @@ class TestDockerEnv():
         # teardown
         self.docker_environment_driver.remove(self.image_name, force=True)
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run(self):
         # TODO: add more options for run w/ volumes etc
         # Keeping stdin_open and tty as either (True, True) or (False, False).
@@ -323,7 +323,7 @@ class TestDockerEnv():
         self.docker_environment_driver.stop(run_id, force=True)
 
     # commenting due to test being unreliable
-    # @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    # @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     # def test_interactive_run(self):
     #     # keeping stdin_open, tty as True
     #     log_filepath = os.path.join(self.docker_environment_driver.root,
@@ -364,9 +364,9 @@ class TestDockerEnv():
     #
     #     # teardown
     #     self.docker_environment_driver.remove(self.image_name, force=True)
-    #     # remove datmoDockerfile
+    #     # remove prodatDockerfile
     #     output_dockerfile_path = os.path.join(self.docker_environment_driver.root,
-    #                                           "datmoDockerfile")
+    #                                           "prodatDockerfile")
     #     os.remove(output_dockerfile_path)
     #
     #     # new jupyter dockerfile
@@ -403,9 +403,9 @@ class TestDockerEnv():
     #
     #     # teardown
     #     self.docker_environment_driver.remove(self.image_name, force=True)
-    #     # remove datmoDockerfile
+    #     # remove prodatDockerfile
     #     output_dockerfile_path = os.path.join(self.docker_environment_driver.root,
-    #                                           "datmoDockerfile")
+    #                                           "prodatDockerfile")
     #     os.remove(output_dockerfile_path)
     #
     #     # new dockerfile
@@ -413,7 +413,7 @@ class TestDockerEnv():
     #         self.docker_environment_driver.root, "Dockerfile")
     #     random_text = str(uuid.uuid1())
     #     with open(new_docker_filepath, "wb") as f:
-    #         f.write(to_bytes("FROM datmo/python-base:cpu-py27" + os.linesep))
+    #         f.write(to_bytes("FROM prodat/python-base:cpu-py27" + os.linesep))
     #         f.write(to_bytes(str("RUN echo " + random_text)))
     #     self.docker_environment_driver.build(self.image_name,
     #                                          new_docker_filepath,
@@ -452,9 +452,9 @@ class TestDockerEnv():
     #     # teardown container
     #     self.docker_environment_driver.stop(container_name, force=True)
     #
-    #     # remove datmoDockerfile
+    #     # remove prodatDockerfile
     #     output_dockerfile_path = os.path.join(self.docker_environment_driver.root,
-    #                                           "datmoDockerfile")
+    #                                           "prodatDockerfile")
     #     os.remove(output_dockerfile_path)
     #
     #     # new dockerfile
@@ -462,7 +462,7 @@ class TestDockerEnv():
     #         self.docker_environment_driver.root, "Dockerfile")
     #     random_text = str(uuid.uuid1())
     #     with open(new_docker_filepath, "wb") as f:
-    #         f.write(to_bytes("FROM datmo/python-base:cpu-py27" + os.linesep))
+    #         f.write(to_bytes("FROM prodat/python-base:cpu-py27" + os.linesep))
     #         f.write(to_bytes(str("RUN echo " + random_text)))
     #     self.docker_environment_driver.build(self.image_name,
     #                                          new_docker_filepath,
@@ -501,9 +501,9 @@ class TestDockerEnv():
     #     # teardown container
     #     self.docker_environment_driver.stop(container_name, force=True)
     #
-    #     # remove datmoDockerfile
+    #     # remove prodatDockerfile
     #     output_dockerfile_path = os.path.join(self.docker_environment_driver.root,
-    #                                           "datmoDockerfile")
+    #                                           "prodatDockerfile")
     #     os.remove(output_dockerfile_path)
     #
     #     # new dockerfile
@@ -511,7 +511,7 @@ class TestDockerEnv():
     #         self.docker_environment_driver.root, "Dockerfile")
     #     random_text = str(uuid.uuid1())
     #     with open(new_docker_filepath, "wb") as f:
-    #         f.write(to_bytes("FROM datmo/python-base:cpu-py27" + os.linesep))
+    #         f.write(to_bytes("FROM prodat/python-base:cpu-py27" + os.linesep))
     #         f.write(to_bytes(str("RUN echo " + random_text)))
     #     self.docker_environment_driver.build(self.image_name,
     #                                          new_docker_filepath,
@@ -547,7 +547,7 @@ class TestDockerEnv():
     #         timed_run_result = True
     #     assert timed_run_result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_stop(self):
         log_filepath = os.path.join(self.docker_environment_driver.root,
                                     "test.log")
@@ -569,7 +569,7 @@ class TestDockerEnv():
         result = self.docker_environment_driver.stop(run_id, force=True)
         assert result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_remove(self):
         # Test if no image present and no containers
         result = self.docker_environment_driver.remove(self.image_name)
@@ -580,9 +580,9 @@ class TestDockerEnv():
                                              self.dockerfile_path)
         result = self.docker_environment_driver.remove(self.image_name)
         assert result == True
-        # remove datmoDockerfile
+        # remove prodatDockerfile
         output_dockerfile_path = os.path.join(
-            self.docker_environment_driver.root, "datmoDockerfile")
+            self.docker_environment_driver.root, "prodatDockerfile")
         os.remove(output_dockerfile_path)
 
         # With force
@@ -592,19 +592,19 @@ class TestDockerEnv():
             self.image_name, force=True)
         assert result == True
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_get_tags_for_docker_repository(self):
         result = self.docker_environment_driver.get_tags_for_docker_repository(
             "hello-world")
         assert 'latest' in result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_build_image(self):
         result = self.docker_environment_driver.build_image(
             self.image_name, self.dockerfile_path)
         assert result == True
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_get_image(self):
         failed = False
         try:
@@ -620,7 +620,7 @@ class TestDockerEnv():
         tags = result.__dict__['attrs']['RepoTags']
         assert self.image_name + ":latest" in tags
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_list_images(self):
         # TODO: Test out all input permutations
         self.docker_environment_driver.build_image(self.image_name,
@@ -638,14 +638,14 @@ class TestDockerEnv():
         group_flat = [item for sublist in list_of_lists for item in sublist]
         assert self.image_name + ":latest" in group_flat
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_search_images(self):
         self.docker_environment_driver.build_image(self.image_name,
                                                    self.dockerfile_path)
         result = self.docker_environment_driver.search_images(self.image_name)
         assert len(result) > 0
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_remove_image(self):
         # Failure without force
         failure = False
@@ -667,9 +667,9 @@ class TestDockerEnv():
                                                    self.dockerfile_path)
         result = self.docker_environment_driver.remove_image(self.image_name)
         assert result == True
-        # remove datmoDockerfile
+        # remove prodatDockerfile
         output_dockerfile_path = os.path.join(
-            self.docker_environment_driver.root, "datmoDockerfile")
+            self.docker_environment_driver.root, "prodatDockerfile")
         os.remove(output_dockerfile_path)
         # With force
         self.docker_environment_driver.build_image(self.image_name,
@@ -677,12 +677,12 @@ class TestDockerEnv():
         result = self.docker_environment_driver.remove_image(
             self.image_name, force=True)
         assert result == True
-        # remove datmoDockerfile
+        # remove prodatDockerfile
         output_dockerfile_path = os.path.join(
-            self.docker_environment_driver.root, "datmoDockerfile")
+            self.docker_environment_driver.root, "prodatDockerfile")
         os.remove(output_dockerfile_path)
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_remove_images(self):
         # TODO: Test out all input permutations
         # Without force
@@ -691,9 +691,9 @@ class TestDockerEnv():
         result = self.docker_environment_driver.remove_images(
             name=self.image_name)
         assert result == True
-        # remove datmoDockerfile
+        # remove prodatDockerfile
         output_dockerfile_path = os.path.join(
-            self.docker_environment_driver.root, "datmoDockerfile")
+            self.docker_environment_driver.root, "prodatDockerfile")
         os.remove(output_dockerfile_path)
         # With force
         self.docker_environment_driver.build_image(self.image_name,
@@ -702,7 +702,7 @@ class TestDockerEnv():
             name=self.image_name, force=True)
         assert result == True
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_run_container(self):
         # TODO: test with all variables provided
         self.docker_environment_driver.build_image(self.image_name,
@@ -723,13 +723,13 @@ class TestDockerEnv():
             self.image_name, api=True, detach=True)
         assert container_obj
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_extract_workspace_url(self):
         # TODO: test with all variables provided
         with open(self.dockerfile_path, "wb") as f:
             f.write(
                 to_bytes(
-                    "FROM datmo/python-base:cpu-py27-notebook" + os.linesep))
+                    "FROM prodat/python-base:cpu-py27-notebook" + os.linesep))
             f.write(to_bytes(str("RUN echo " + self.random_text)))
         self.docker_environment_driver.build_image(self.image_name,
                                                    self.dockerfile_path)
@@ -775,7 +775,7 @@ class TestDockerEnv():
         # teardown container
         self.docker_environment_driver.stop(random_container_id, force=True)
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_get_container(self):
         failed = False
         try:
@@ -791,7 +791,7 @@ class TestDockerEnv():
         result = self.docker_environment_driver.get_container(container_id)
         assert result
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_list_containers(self):
         # TODO: Test out all input permutations
         self.docker_environment_driver.build_image(self.image_name,
@@ -803,7 +803,7 @@ class TestDockerEnv():
         # teardown
         self.docker_environment_driver.remove(self.image_name, force=True)
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_stop_container(self):
         self.docker_environment_driver.build_image(self.image_name,
                                                    self.dockerfile_path)
@@ -814,7 +814,7 @@ class TestDockerEnv():
         result = self.docker_environment_driver.get_container(container_id)
         assert result.__dict__['attrs']['State']['Status'] == "exited"
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_remove_container(self):
         # Failure random container id (no force)
         failure = False
@@ -845,7 +845,7 @@ class TestDockerEnv():
             container_id, force=True)
         assert result == True
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_log_container(self):
         # TODO: Do a more comprehensive test, test out optional variables
         # TODO: Test out more commands at the system level
@@ -865,7 +865,7 @@ class TestDockerEnv():
         with open(log_filepath, "r") as f:
             assert f.readline() != ""
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_stop_remove_containers_by_term(self):
         # 1) Test with image_name (random container name), match with image_name
         # 2) Test with image_name and name given, match with name
@@ -886,15 +886,15 @@ class TestDockerEnv():
 
         # 2) Test option 2
         self.docker_environment_driver.run_container(
-            self.image_name, name="datmo_test")
+            self.image_name, name="prodat_test")
         result = self.docker_environment_driver.stop_remove_containers_by_term(
-            "datmo_test")
+            "prodat_test")
         assert result == True
         # Test with force
         self.docker_environment_driver.run_container(
-            self.image_name, name="datmo_test")
+            self.image_name, name="prodat_test")
         result = self.docker_environment_driver.stop_remove_containers_by_term(
-            "datmo_test", force=True)
+            "prodat_test", force=True)
         assert result == True
 
     def test_create_requirements_file(self):
@@ -904,7 +904,7 @@ class TestDockerEnv():
         # 1) Test option 1
         result = self.docker_environment_driver.create_requirements_file()
         assert os.path.isfile(result) and \
-               "datmo" in open(result, "r").read()
+               "prodat" in open(result, "r").read()
 
         # 2) Test option 2
         # Since it uses pip as package manager, it doesn't extract any other package than what
@@ -918,7 +918,7 @@ class TestDockerEnv():
         result = self.docker_environment_driver.create_requirements_file()
         assert result
         assert os.path.isfile(result) and \
-               "datmo" in open(result, "r").read()
+               "prodat" in open(result, "r").read()
 
         # 3) Test option 3
         exception_thrown = False
@@ -949,26 +949,26 @@ class TestDockerEnv():
         print(repr(output))
         assert "python" in output
 
-    def test_create_datmo_definition(self):
+    def test_create_prodat_definition(self):
         # Test 1
         input_dockerfile_path = os.path.join(
             self.docker_environment_driver.root, "Dockerfile")
         output_dockerfile_path = os.path.join(
-            self.docker_environment_driver.root, "datmoDockerfile")
-        result = self.docker_environment_driver.create_datmo_definition(
+            self.docker_environment_driver.root, "prodatDockerfile")
+        result = self.docker_environment_driver.create_prodat_definition(
             input_dockerfile_path, output_dockerfile_path)
         assert result
         assert os.path.isfile(output_dockerfile_path)
         output = open(output_dockerfile_path, "r").read()
         print(repr(output))
-        assert "datmo essential" in output
+        assert "prodat essential" in output
 
-        # Test 2: With workspaces on datmo base image
+        # Test 2: With workspaces on prodat base image
         os.remove(output_dockerfile_path)
         with open(input_dockerfile_path, "wb") as f:
-            f.write(to_bytes("FROM datmo/python-base:cpu-py27" + os.linesep))
+            f.write(to_bytes("FROM prodat/python-base:cpu-py27" + os.linesep))
             f.write(to_bytes(str("RUN echo " + self.random_text)))
-        result = self.docker_environment_driver.create_datmo_definition(
+        result = self.docker_environment_driver.create_prodat_definition(
             input_dockerfile_path,
             output_dockerfile_path,
             workspace="notebook")
@@ -976,15 +976,15 @@ class TestDockerEnv():
         assert os.path.isfile(output_dockerfile_path)
         output = open(output_dockerfile_path, "r").read()
         print(repr(output))
-        assert "FROM datmo/python-base:cpu-py27-notebook" in output
-        assert "datmo essential" in output
+        assert "FROM prodat/python-base:cpu-py27-notebook" in output
+        assert "prodat essential" in output
 
-        # Test 3: With workspaces on datmo base image with jupyterlab
+        # Test 3: With workspaces on prodat base image with jupyterlab
         os.remove(output_dockerfile_path)
         with open(input_dockerfile_path, "wb") as f:
-            f.write(to_bytes("FROM datmo/python-base:cpu-py27" + "\n"))
+            f.write(to_bytes("FROM prodat/python-base:cpu-py27" + "\n"))
             f.write(to_bytes(str("RUN echo " + self.random_text)))
-        result = self.docker_environment_driver.create_datmo_definition(
+        result = self.docker_environment_driver.create_prodat_definition(
             input_dockerfile_path,
             output_dockerfile_path,
             workspace="jupyterlab")
@@ -992,10 +992,10 @@ class TestDockerEnv():
         assert os.path.isfile(output_dockerfile_path)
         output = open(output_dockerfile_path, "r").read()
         print(repr(output))
-        assert "FROM datmo/python-base:cpu-py27-jupyterlab" in output
-        assert "datmo essential" in output
+        assert "FROM prodat/python-base:cpu-py27-jupyterlab" in output
+        assert "prodat essential" in output
 
-    @pytest_docker_environment_failed_instantiation(test_datmo_dir)
+    @pytest_docker_environment_failed_instantiation(test_prodat_dir)
     def test_gpu_enabled(self):
         if not self.docker_environment_driver.gpu_enabled():
             print("GPU not available")

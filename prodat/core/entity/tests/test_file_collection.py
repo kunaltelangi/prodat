@@ -1,7 +1,7 @@
 """
 Tests for FileCollection
 """
-from datmo.core.entity.file_collection import FileCollection
+from prodat.core.entity.file_collection import FileCollection
 
 class TestFileCollection():
     def setup_class(self):

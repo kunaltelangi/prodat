@@ -1,7 +1,7 @@
 import sys
 import argparse
 
-from datmo.core.util.exceptions import UnrecognizedCLIArgument
+from prodat.core.util.exceptions import UnrecognizedCLIArgument
 
 class Parser(argparse.ArgumentParser):
     """
