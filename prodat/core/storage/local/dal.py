@@ -1,6 +1,8 @@
 import os
-from kids.cache import cache
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from kids.cache import cache
 
 from prodat.core.util.i18n import get as __
 from prodat.core.entity.model import Model
@@ -10,297 +12,217 @@ from prodat.core.entity.file_collection import FileCollection
 from prodat.core.entity.task import Task
 from prodat.core.entity.snapshot import Snapshot
 from prodat.core.entity.user import User
-from prodat.core.util.exceptions import InputError, EntityNotFound, MoreThanOneEntityFound, DALNotInitialized
+from prodat.core.util.exceptions import (
+    InputError,
+    EntityNotFound,
+    MoreThanOneEntityFound,
+    DALNotInitialized,
+)
 from prodat.core.util.misc_functions import create_unique_hash
 from prodat.core.storage.driver.blitzdb_dal_driver import BlitzDBDALDriver
 
-class LocalDAL():
-    """
-    LocalDAL is a local DAL object that stores info locally. DAL stands for 'data access layer' and serves as a storage for
-    all entities.
 
-    Parameters
-    ----------
-    driver_type : str
-        type of driver to pull from
-    driver_options : dict
-        options for the DALdriver class
-    driver : prodat.core.storage.driver.DALDriver, optional
-        Instantiated DAL driver used for backend storage for entities
-
-    Attributes
-    ----------
-    driver_type : str
-    driver_options : dict
-    driver : prodat.core.storage.driver.DALDriver
-        Instantiated DAL driver used for backend storage for entities
-    is_initialized : bool
-    model : ModelMethods
-    code : CodeMethods
-    environment : EnvironmentMethods
-    file_collection : FileCollectionMethods
-    task : TaskMethods
-    snapshot : SnapshotMethods
-    user : UserMethods
-
-    Methods
-    -------
-    init()
-        initialize the dal
-
-    """
-
-    def __init__(self, driver_type, driver_options, driver=None):
+class LocalDAL:
+    def __init__(self, driver_type: str, driver_options: Optional[Dict[str, Any]] = None, driver: Any = None):
         self.driver_type = driver_type
-        self.driver_options = driver_options
+        self.driver_options = driver_options or {}
         self.driver = driver
-        self._is_initialized = self.is_initialized
-
-    @property
-    def is_initialized(self):
-        if os.path.isdir(self.driver_options['connection_string']):
-            self._is_initialized = True
-            # set the driver so it is available
-            if not self.driver:
-                if self.driver_type == "blitzdb":
-                    self.driver = BlitzDBDALDriver(**self.driver_options)
-            return self._is_initialized
         self._is_initialized = False
-        return self._is_initialized
 
     @property
-    def model(self):
-        """Model CRUD methods
+    def is_initialized(self) -> bool:
+        if self._is_initialized:
+            return True
 
-        Returns
-        -------
-        ModelMethods
-            Specific set of CRUD functions for model
+        conn = self.driver_options.get("connection_string")
+        if conn and os.path.isdir(conn):
+            if not self.driver and self.driver_type == "blitzdb":
+                self.driver = BlitzDBDALDriver(**self.driver_options)
+            self._is_initialized = True
+            return True
 
-        Raises
-        ------
-        DALNotInitialized
-        """
+        # If a driver instance was provided directly, consider initialized
+        if self.driver is not None:
+            self._is_initialized = True
+            return True
+
+        self._is_initialized = False
+        return False
+
+    def init(self) -> None:
+        if self.driver:
+            self._is_initialized = True
+            return
+
+        if self.driver_type == "blitzdb":
+            conn = self.driver_options.get("connection_string")
+            if conn and not os.path.isdir(conn):
+                # create directory to allow initialization
+                os.makedirs(conn, exist_ok=True)
+            self.driver = BlitzDBDALDriver(**self.driver_options)
+            self._is_initialized = True
+            return
+
+        raise DALNotInitialized()
+
+    @property
+    def model(self) -> "ModelMethods":
         if not self.is_initialized:
             raise DALNotInitialized()
         return ModelMethods(self.driver)
 
     @property
-    def code(self):
-        """Code CRUD methods
-
-        Returns
-        -------
-        CodeMethods
-            Specific set of CRUD functions for code
-
-        Raises
-        ------
-        DALNotInitialized
-        """
+    def code(self) -> "CodeMethods":
         if not self.is_initialized:
             raise DALNotInitialized()
         return CodeMethods(self.driver)
 
     @property
-    def environment(self):
-        """Environment CRUD methods
-
-        Returns
-        -------
-        EnvironmentMethods
-            Specific set of CRUD functions for environment
-
-        Raises
-        ------
-        DALNotInitialized
-        """
+    def environment(self) -> "EnvironmentMethods":
         if not self.is_initialized:
             raise DALNotInitialized()
         return EnvironmentMethods(self.driver)
 
     @property
-    def file_collection(self):
-        """FileCollection CRUD methods
-
-        Returns
-        -------
-        FileCollectionMethods
-            Specific set of CRUD functions for file collection
-
-        Raises
-        ------
-        DALNotInitialized
-        """
+    def file_collection(self) -> "FileCollectionMethods":
         if not self.is_initialized:
             raise DALNotInitialized()
         return FileCollectionMethods(self.driver)
 
     @cache
     @property
-    def task(self):
-        """Task CRUD methods
-
-        Returns
-        -------
-        TaskMethods
-            Specific set of CRUD functions for task
-
-        Raises
-        ------
-        DALNotInitialized
-        """
+    def task(self) -> "TaskMethods":
         if not self.is_initialized:
             raise DALNotInitialized()
         return TaskMethods(self.driver)
 
     @cache
     @property
-    def snapshot(self):
-        """Snapshot CRUD methods
-
-        Returns
-        -------
-        SnapshotMethods
-            Specific set of CRUD functions for snapshot
-
-        Raises
-        ------
-        DALNotInitialized
-        """
+    def snapshot(self) -> "SnapshotMethods":
         if not self.is_initialized:
             raise DALNotInitialized()
         return SnapshotMethods(self.driver)
 
     @cache
     @property
-    def user(self):
-        """User CRUD methods
-
-        Returns
-        -------
-        UserMethods
-            Specific set of CRUD functions for user
-
-        Raises
-        ------
-        DALNotInitialized
-        """
+    def user(self) -> "UserMethods":
         if not self.is_initialized:
             raise DALNotInitialized()
         return UserMethods(self.driver)
 
-    def init(self):
-        if not self.driver:
-            if self.driver_type == "blitzdb":
-                self.driver = BlitzDBDALDriver(**self.driver_options)
 
-class EntityMethodsCRUD(object):
-    def __init__(self, collection, entity_class, driver):
+class EntityMethodsCRUD:
+    def __init__(self, collection: str, entity_class: Any, driver: Any):
         self.collection = collection
         self.entity_class = entity_class
         self.driver = driver
 
-    def get_by_id(self, entity_id):
+    def _to_dict(self, obj: Any) -> Dict[str, Any]:
+        if hasattr(obj, "to_dictionary"):
+            return obj.to_dictionary()
+        if isinstance(obj, dict):
+            return dict(obj)
+        return self.entity_class(obj).to_dictionary()
+
+    def get_by_id(self, entity_id: str) -> Any:
         obj = self.driver.get(self.collection, entity_id)
+        if not obj:
+            raise EntityNotFound()
         return self.entity_class(obj)
 
-    def get_by_shortened_id(self, shortened_entity_id):
-        obj = self.driver.get_by_shortened_id(self.collection,
-                                              shortened_entity_id)
+    def get_by_shortened_id(self, shortened_entity_id: str) -> Any:
+        obj = self.driver.get_by_shortened_id(self.collection, shortened_entity_id)
+        if not obj:
+            raise EntityNotFound()
         return self.entity_class(obj)
 
-    def create(self, prodat_entity):
-        # translate prodat_entity to a standard dictionary (document) to be stored
-        if hasattr(prodat_entity, 'to_dictionary'):
-            dict_obj = prodat_entity.to_dictionary()
-        else:
-            dict_obj = self.entity_class(prodat_entity).to_dictionary()
-        # create a unique hash from misc_functions.py
-        # TODO: find efficient way to get previous hash for entity
-        # latest_entity = self.query({"id": latest})
-        # dict_obj['id'] = create_unique_hash(base_hash=latest_entity['id'])
-        dict_obj['id'] = dict_obj['id'] if 'id' in dict_obj.keys() and dict_obj['id'] else \
-            create_unique_hash()
+    def create(self, prodat_entity: Any) -> Any:
+        dict_obj = self._to_dict(prodat_entity)
+
+        if "id" not in dict_obj or not dict_obj["id"]:
+            dict_obj["id"] = create_unique_hash()
+
+        now = datetime.utcnow()
+        dict_obj.setdefault("created_at", now)
+        dict_obj["updated_at"] = now
+
         response = self.driver.set(self.collection, dict_obj)
-        entity_instance = self.entity_class(response)
-        return entity_instance
+        if not response:
+            raise InputError(__("error", "storage.local.dal.create"))
+        return self.entity_class(response)
 
-    def update(self, prodat_entity):
-        # translate prodat_entity to a standard dictionary (document) to be stored
-        if hasattr(prodat_entity, 'to_dictionary'):
-            dict_obj = prodat_entity.to_dictionary()
-        else:
-            if 'id' not in list(prodat_entity) or not prodat_entity['id']:
-                raise InputError(__("error", "storage.local.dal.update"))
-            # Aggregate original object and new object into dict_obj var
-            new_dict_obj = prodat_entity
-            original_prodat_entity = self.get_by_id(prodat_entity['id'])
-            dict_obj = {}
-            for key, value in original_prodat_entity.to_dictionary().items():
-                if key in list(new_dict_obj):
-                    dict_obj[key] = new_dict_obj[key]
-                else:
-                    dict_obj[key] = getattr(original_prodat_entity, key)
+    def update(self, prodat_entity: Any) -> Any:
+        # accept either dict-like or entity instance
+        new_dict = self._to_dict(prodat_entity)
 
-        # set updated_at always
-        dict_obj['updated_at'] = datetime.utcnow()
-        response = self.driver.set(self.collection, dict_obj)
-        entity_instance = self.entity_class(response)
-        return entity_instance
+        entity_id = new_dict.get("id")
+        if not entity_id:
+            raise InputError(__("error", "storage.local.dal.update"))
 
-    def delete(self, entity_id):
-        return self.driver.delete(self.collection, entity_id)
+        original = self.get_by_id(entity_id)
+        original_dict = original.to_dictionary()
 
-    def query(self, query_params, sort_key=None, sort_order=None):
-        return [
-            self.entity_class(item) for item in self.driver.query(
-                self.collection, query_params, sort_key, sort_order)
-        ]
+        # merge original and new, preferring new values (including explicit None)
+        merged = dict(original_dict)
+        for k, v in new_dict.items():
+            merged[k] = v
 
-    def findOne(self, query_params):
+        merged["updated_at"] = datetime.utcnow()
+        response = self.driver.set(self.collection, merged)
+        if not response:
+            raise InputError(__("error", "storage.local.dal.update"))
+        return self.entity_class(response)
+
+    def delete(self, entity_id: str) -> bool:
+        result = self.driver.delete(self.collection, entity_id)
+        if not result:
+            # normalize behavior: if deletion had no effect, raise not found
+            raise EntityNotFound()
+        return True
+
+    def query(self, query_params: Dict[str, Any], sort_key: Optional[str] = None, sort_order: Optional[str] = None) -> List[Any]:
+        items = self.driver.query(self.collection, query_params, sort_key, sort_order)
+        return [self.entity_class(item) for item in items]
+
+    def findOne(self, query_params: Dict[str, Any]) -> Any:
         results = self.query(query_params)
         if len(results) == 0:
             raise EntityNotFound()
-
         if len(results) > 1:
             raise MoreThanOneEntityFound()
-
         return results[0]
 
-#
-# https://stackoverflow.com/questions/1713038/super-fails-with-error-typeerror-argument-1-must-be-type-not-classobj
-#
 
-#
-# prodat Entity methods
-#
 class ModelMethods(EntityMethodsCRUD):
-    def __init__(self, driver):
-        super(ModelMethods, self).__init__('model', Model, driver)
+    def __init__(self, driver: Any):
+        super(ModelMethods, self).__init__("model", Model, driver)
+
 
 class CodeMethods(EntityMethodsCRUD):
-    def __init__(self, driver):
-        super(CodeMethods, self).__init__('code', Code, driver)
+    def __init__(self, driver: Any):
+        super(CodeMethods, self).__init__("code", Code, driver)
+
 
 class EnvironmentMethods(EntityMethodsCRUD):
-    def __init__(self, driver):
-        super(EnvironmentMethods, self).__init__('environment', Environment,
-                                                 driver)
+    def __init__(self, driver: Any):
+        super(EnvironmentMethods, self).__init__("environment", Environment, driver)
+
 
 class FileCollectionMethods(EntityMethodsCRUD):
-    def __init__(self, driver):
-        super(FileCollectionMethods, self).__init__('file_collection',
-                                                    FileCollection, driver)
+    def __init__(self, driver: Any):
+        super(FileCollectionMethods, self).__init__("file_collection", FileCollection, driver)
+
 
 class TaskMethods(EntityMethodsCRUD):
-    def __init__(self, driver):
-        super(TaskMethods, self).__init__('task', Task, driver)
+    def __init__(self, driver: Any):
+        super(TaskMethods, self).__init__("task", Task, driver)
+
 
 class SnapshotMethods(EntityMethodsCRUD):
-    def __init__(self, driver):
-        super(SnapshotMethods, self).__init__('snapshot', Snapshot, driver)
+    def __init__(self, driver: Any):
+        super(SnapshotMethods, self).__init__("snapshot", Snapshot, driver)
+
 
 class UserMethods(EntityMethodsCRUD):
-    def __init__(self, driver):
-        super(UserMethods, self).__init__('user', User, driver)
+    def __init__(self, driver: Any):
+        super(UserMethods, self).__init__("user", User, driver)
