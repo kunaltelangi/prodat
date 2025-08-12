@@ -1,373 +1,388 @@
 import os
 import shutil
 import errno
-import pathspec
 import tempfile
 import hashlib
+import pathspec
 import checksumdir
-try:
-    to_unicode = str
-except NameError:
-    to_unicode = str
 
 from prodat.core.util.misc_functions import list_all_filepaths
 from prodat.core.util.i18n import get as __
-from prodat.core.util.exceptions import (PathDoesNotExist, FileIOError,
-                                        UnstagedChanges, CodeNotInitialized,
-                                        CommitDoesNotExist)
+from prodat.core.util.exceptions import (
+    PathDoesNotExist,
+    FileIOError,
+    UnstagedChanges,
+    CodeNotInitialized,
+    CommitDoesNotExist,
+)
 from prodat.core.controller.code.driver import CodeDriver
 
+
 class FileCodeDriver(CodeDriver):
-    """File-based Code Driver handles source control management for the project with files
+    """File-based Code Driver handles source-control-like snapshots for a project.
+
+    Notes:
+    - Tracked files are discovered relative to self.root (via list_all_filepaths).
+    - Commits are recorded as small files inside self._code_filepath (one file per commit id).
+      File contents are lines "relative/path/to/file, <filehash>".
+    - Actual file contents are stored under self._code_filepath/<relative/path>/<filehash>
+      so multiple versions of same file can co-exist.
     """
 
     def __init__(self, root, prodat_directory_name):
         super(FileCodeDriver, self).__init__()
         self.root = root
-        # Check if filepath exists
         if not os.path.exists(self.root):
             raise PathDoesNotExist(
-                __("error", "controller.code.driver.git.__init__.dne", root))
+                __("error", "controller.code.driver.git.__init__.dne", root)
+            )
+
         self._prodat_directory_name = prodat_directory_name
-        self._prodat_directory_path = os.path.join(self.root,
-                                                  self._prodat_directory_name)
+        self._prodat_directory_path = os.path.join(self.root, self._prodat_directory_name)
+        # "code" folder inside the prodat directory used to store commits and file blobs
         self._code_filepath = os.path.join(self._prodat_directory_path, "code")
         self._prodat_ignore_filepath = os.path.join(self.root, ".prodatignore")
-        self._is_initialized = self.is_initialized
+        # type marker
         self.type = "file"
 
     @property
     def is_initialized(self):
-        if os.path.isdir(self._prodat_directory_path) and \
-            os.path.isdir(self._code_filepath):
-            self._is_initialized = True
-            return self._is_initialized
-        self._is_initialized = False
-        return self._is_initialized
+        """Whether the prodat/code layout exists on disk."""
+        is_init = os.path.isdir(self._prodat_directory_path) and os.path.isdir(self._code_filepath)
+        return is_init
 
     def init(self):
+        """Initialize the code store (create prodat/code directories)."""
+        # Ensure prodat directory exists
+        if not os.path.isdir(self._prodat_directory_path):
+            os.makedirs(self._prodat_directory_path, exist_ok=True)
         # Create code path if does not exist
         if not os.path.isdir(self._code_filepath):
-            os.makedirs(self._code_filepath)
+            os.makedirs(self._code_filepath, exist_ok=True)
         return True
 
     def _get_tracked_files(self):
-        """Return list of tracked files relative to the root directory
+        """Return list of tracked files relative to the root directory.
 
-        This will look through all of the files and will exclude any prodat directories
-        (.prodat) and any paths included in .prodatignore
-        TODO: add general list of directories to ignore here (should be passed in by higher level code)
-
-        Returns
-        -------
-        list
-            list of filepaths relative to the the root of the repo
+        Excludes:
+         - the prodat directory itself
+         - .git directory
+         - paths matched by .prodatignore (if present)
         """
         all_files = set(list_all_filepaths(self.root))
 
-        # Ignore the .prodat/ folder and all contents within it
-        spec = pathspec.PathSpec.from_lines('gitwildmatch',
-                                            [self._prodat_directory_name])
+        # Build patterns for directories that must be ignored (relative names)
+        prodat_pattern = self._prodat_directory_name
+        git_pattern = ".git"
+
+        # Use gitwildmatch for directory patterns
+        spec = pathspec.PathSpec.from_lines("gitwildmatch", [prodat_pattern])
         dot_prodat_files = set(spec.match_tree(self.root))
 
-        # Ignore the .git/ folder and all contents within it
-        spec = pathspec.PathSpec.from_lines('gitwildmatch', [".git"])
+        spec = pathspec.PathSpec.from_lines("gitwildmatch", [git_pattern])
         dot_git_files = set(spec.match_tree(self.root))
 
-        # Load ignored files from .prodatignore file if exi
-        prodatignore_files = {".prodatignore"}
-        if os.path.isfile(os.path.join(self.root, ".prodatignore")):
+        # Load .prodatignore if present (gitignore style)
+        prodatignore_files = set()
+        if os.path.isfile(self._prodat_ignore_filepath):
             with open(self._prodat_ignore_filepath, "r") as f:
-                spec = pathspec.PathSpec.from_lines('gitignore', f)
-                prodatignore_files.update(set(spec.match_tree(self.root)))
-        return list(
-            all_files - dot_prodat_files - dot_git_files - prodatignore_files)
+                spec = pathspec.PathSpec.from_lines("gitignore", f)
+                prodatignore_files.update(spec.match_tree(self.root))
+
+        ignored = dot_prodat_files.union(dot_git_files).union(prodatignore_files)
+
+        tracked = sorted(list(all_files - ignored))
+        return tracked
 
     def _calculate_commit_hash(self, tracked_files):
-        """Return the commit hash of the repository"""
-        # Move tracked files to temp directory within _code_filepath
-        # Hash files and return hash
+        """Create a temporary snapshot of tracked files and return a directory-hash.
+
+        Uses checksumdir.dirhash on a temporary directory created inside self._code_filepath.
+        """
+        temp_dir = None
         try:
             temp_dir = tempfile.mkdtemp(dir=self._code_filepath)
             for rel_filepath in tracked_files:
-                # Ensure new directory will exist in the temp dir
                 filename = os.path.basename(rel_filepath)
-                rel_dirpath = rel_filepath.replace(filename, "")
+                rel_dirpath = rel_filepath[: -len(filename)] if filename else rel_filepath
                 new_dirpath = os.path.join(temp_dir, rel_dirpath)
                 # Ensure directory exists
-                if not os.path.isdir(new_dirpath):
-                    os.makedirs(new_dirpath)
-                # Move individual file from old_filepath to new_filepath
+                os.makedirs(new_dirpath, exist_ok=True)
+
                 old_filepath = os.path.join(self.root, rel_filepath)
                 new_filepath = os.path.join(new_dirpath, filename)
+                # Only copy if source exists; missing file is an error in tracked list
+                if not os.path.isfile(old_filepath):
+                    raise PathDoesNotExist(
+                        __("error", "controller.code.driver.file._calculate_commit_hash", old_filepath)
+                    )
                 shutil.copy2(old_filepath, new_filepath)
+            # Return directory hash (checksumdir.dirhash default behavior)
             return self._get_dirhash(temp_dir)
         finally:
-            try:
-                shutil.rmtree(temp_dir)  # delete directory
-            except OSError as exc:
-                if exc.errno != errno.ENOENT:  # ENOENT - no such file or directory
-                    raise  # re-raise exception
+            # Clean up temporary directory if it was created
+            if temp_dir and os.path.exists(temp_dir):
+                try:
+                    shutil.rmtree(temp_dir)
+                except OSError as exc:
+                    # If directory already gone, ignore; else raise
+                    if exc.errno != errno.ENOENT:
+                        raise
 
     @staticmethod
     def _get_filehash(absolute_filepath):
+        """Return an md5 hex digest of a file's bytes."""
         if not os.path.isfile(absolute_filepath):
             raise PathDoesNotExist(
-                __("error", "util.misc_functions.get_filehash",
-                   absolute_filepath))
+                __("error", "util.misc_functions.get_filehash", absolute_filepath)
+            )
         BUFF_SIZE = 65536
-        sha1 = hashlib.md5()
+        md5 = hashlib.md5()
         with open(absolute_filepath, "rb") as f:
             while True:
                 data = f.read(BUFF_SIZE)
                 if not data:
                     break
-                sha1.update(data)
-        return sha1.hexdigest()
+                md5.update(data)
+        return md5.hexdigest()
 
     @staticmethod
     def _get_dirhash(absolute_dirpath):
+        """Return a hash for the contents of a directory using checksumdir.dirhash."""
+        # checksumdir.dirhash may raise exceptions if dir doesn't exist; let it bubble up
         return checksumdir.dirhash(absolute_dirpath)
 
     def _has_unstaged_changes(self):
-        """Return whether there are unstaged changes"""
-        # TODO: fix circular logic: for empty tracked filepaths, must return "unstaged" until commit is created.
-        # TODO: otherwise initial commit will always fail because of no unstaged changes
+        """Return whether there are unstaged changes.
+
+        Special-case: if there are zero tracked files and there are no commits,
+        consider that 'unstaged' to force an initial commit.
+        """
         tracked_filepaths = self._get_tracked_files()
+
+        # If no tracked files: if there are no commits, treat as unstaged (require initial commit).
+        commits = self.list_refs() or []
+        if not tracked_filepaths:
+            return len(commits) == 0
+
         commit_hash = self._calculate_commit_hash(tracked_filepaths)
-        if self.exists_ref(commit_hash):
-            return False
-        return True
+        return not self.exists_ref(commit_hash)
 
     def current_hash(self):
+        """Return the current working tree hash; this will raise if there are unstaged changes."""
         self.check_unstaged_changes()
-        # Find all tracked files (_get_tracked_files)
         tracked_filepaths = self._get_tracked_files()
-        # Return hash of the files (_calculate_commit_hash)
         return self._calculate_commit_hash(tracked_filepaths)
 
     def create_ref(self, commit_id=None):
-        """Add all files except for those in .prodatignore, and make a commit
+        """Create a commit snapshot or validate an existing commit id.
 
-        If the commit_id is given, it will return the same commit_id or error
+        If commit_id is provided, it must already exist.
+        Otherwise, create a commit record and copy blobs into the code folder.
 
-        Parameters
-        ----------
-        commit_id : str, optional
-            if commit_id is given, it will ensure this commit_id exists and not create a new one
-
-        Returns
-        -------
-        commit_id : str, optional
-            if commit_id is given, it will not add files and will not create a commit
-
-        Raises
-        ------
-        CodeNotInitialized
-            error if not initialized (must initialize first)
-        CommitDoesNotExist
-            commit id specified does not match a valid commit
-        CommitFailed
-            commit could not be created
+        Returns commit_id string.
         """
         if not self.is_initialized:
             raise CodeNotInitialized()
-        # If commit is given and it exists then just return it back
+
+        # If commit given, validate existence and return
         if commit_id:
             if not self.exists_ref(commit_id):
                 raise CommitDoesNotExist(
-                    __("error",
-                       "controller.code.driver.file.create_ref.no_commit",
-                       commit_id))
+                    __("error", "controller.code.driver.file.create_ref.no_commit", commit_id)
+                )
             return commit_id
-        # Find all tracked files (_get_tracked_files)
+
+        # Build list of tracked files and commit hash
         tracked_filepaths = self._get_tracked_files()
-        # Create the hash of the files (_calculate_commit_hash)
         commit_hash = self._calculate_commit_hash(tracked_filepaths)
-        # Check if the hash already exists with exists_ref
+
+        # If commit already exists, return
         if self.exists_ref(commit_hash):
             return commit_hash
-        # Create a new file with the commit hash if it is new, else ERROR (no changes)
+
+        # Ensure code path exists
+        os.makedirs(self._code_filepath, exist_ok=True)
+
+        # Create commit record file (one line per tracked file: "relpath,filehash")
         commit_filepath = os.path.join(self._code_filepath, commit_hash)
-        with open(commit_filepath, "a+") as f:
-            # Loop through the tracked files
-            for tracked_filepath in tracked_filepaths:
-                absolute_filepath = os.path.join(self.root, tracked_filepath)
-                absolute_dirpath = os.path.join(self._code_filepath,
-                                                tracked_filepath)
-                # 1) create dir for file (use path name from tracked files list) -- if already exists skip
-                if not os.path.isdir(absolute_dirpath):
-                    os.makedirs(absolute_dirpath)
-                # 2) hash the file
-                filehash = self._get_filehash(absolute_filepath)
-                # 3) add file with file hash as name to folder for the file (if already exists, will overwrite file -- new ts)
-                new_absolute_filepath = os.path.join(absolute_dirpath,
-                                                     filehash)
-                shutil.copy2(absolute_filepath, new_absolute_filepath)
-                # 4) append a line into the new file for the commit hash with the following "filepath, filehash"
-                f.write(tracked_filepath + "," + filehash + "\n")
-        # Return commit hash if success else ERROR
+        try:
+            with open(commit_filepath, "a+", encoding="utf-8") as f:
+                for tracked_filepath in tracked_filepaths:
+                    absolute_filepath = os.path.join(self.root, tracked_filepath)
+                    if not os.path.isfile(absolute_filepath):
+                        raise FileIOError(
+                            __("error", "controller.code.driver.file.create_ref.missing_file", absolute_filepath)
+                        )
+
+                    # Directory under code where file-version blobs are stored:
+                    # code/<relative/path/to/file>/  and inside it filehash
+                    blob_dir = os.path.join(self._code_filepath, tracked_filepath)
+                    os.makedirs(blob_dir, exist_ok=True)
+
+                    # compute file hash and copy content into blob store
+                    filehash = self._get_filehash(absolute_filepath)
+                    new_blob_path = os.path.join(blob_dir, filehash)
+                    # Copy only if not already present
+                    if not os.path.isfile(new_blob_path):
+                        shutil.copy2(absolute_filepath, new_blob_path)
+
+                    # Append record to commit file
+                    f.write(f"{tracked_filepath},{filehash}\n")
+        except OSError as exc:
+            raise FileIOError(
+                __("error", "controller.code.driver.file.create_ref.io_error", str(exc))
+            )
+
         return commit_hash
 
     def current_ref(self):
-        """Returns the current ref of the code (may not be a commit id, if not saved)
-
-        Returns
-        -------
-        commit_id : str
-            the current commit_id (this may not be a commit id)
-
-        Raises
-        ------
-        CodeNotInitialized
-            error if not initialized (must initialize first)
-        """
+        """Return the hash that corresponds to the current working tree (does not require staging)."""
         if not self.is_initialized:
             raise CodeNotInitialized()
         tracked_filepaths = self._get_tracked_files()
         return self._calculate_commit_hash(tracked_filepaths)
 
     def latest_ref(self):
-        """Returns the latest ref of the code
-
-        Raises
-        ------
-        CodeNotInitialized
-            error if not initialized (must initialize first)
-        """
+        """Return the most-recent commit filename (or None if no commits exist)."""
         if not self.is_initialized:
             raise CodeNotInitialized()
 
-        def getmtime(absolute_filepath):
-            # Keeping it granular as timestaps in git
-            return int(os.path.getmtime(absolute_filepath))
+        commit_hashes = self.list_refs() or []
+        if not commit_hashes:
+            return None
 
-        # List all files in the code directory (ignore directories)
-        for _, _, commit_hashes in os.walk(self._code_filepath):
-            sorted_commit_hashes = sorted(
-                [
-                    os.path.join(self._code_filepath, commit_hash)
-                    for commit_hash in commit_hashes
-                ],
-                key=getmtime,
-                reverse=True)
-            _, filename = os.path.split(sorted_commit_hashes[0])
-            return filename
+        # Build full paths for files and sort by mtime
+        full_paths = []
+        for h in commit_hashes:
+            p = os.path.join(self._code_filepath, h)
+            if os.path.isfile(p):
+                full_paths.append(p)
+
+        if not full_paths:
+            return None
+
+        full_paths.sort(key=os.path.getmtime, reverse=True)
+        # Return filename (commit id)
+        return os.path.basename(full_paths[0])
 
     def exists_ref(self, commit_id):
-        """Returns a boolean if the commit exists
-
-        Parameters
-        ----------
-        commit_id : str
-            commit id to check for
-
-        Returns
-        -------
-        bool
-            True if exists else False
-
-        Raises
-        ------
-        CodeNotInitialized
-            error if not initialized (must initialize first)
-        """
+        """Return True if commit exists."""
         if not self.is_initialized:
             raise CodeNotInitialized()
-        # List all files in code directory
-        commit_hashes = self.list_refs()
-        # Check if commit_id exists in the list
-        if commit_id in commit_hashes:
-            return True
-        return False
+        commit_hashes = self.list_refs() or []
+        return commit_id in commit_hashes
 
     def delete_ref(self, commit_id):
-        """Removes the commit hash file, but not the file references
-
-        Raises
-        ------
-        CodeNotInitialized
-            error if not initialized (must initialize first)
-        """
+        """Remove the commit file (does not remove blobs)."""
         if not self.is_initialized:
             raise CodeNotInitialized()
         if not self.exists_ref(commit_id):
             raise FileIOError(
-                __("error", "controller.code.driver.file.delete_ref"))
+                __("error", "controller.code.driver.file.delete_ref")
+            )
         commit_filepath = os.path.join(self._code_filepath, commit_id)
-        os.remove(commit_filepath)
+        try:
+            os.remove(commit_filepath)
+        except OSError as exc:
+            raise FileIOError(
+                __("error", "controller.code.driver.file.delete_ref.io", str(exc))
+            )
         return True
 
     def list_refs(self):
-        """List all commits in repo
-
-        Raises
-        ------
-        CodeNotInitialized
-            error if not initialized (must initialize first)
-        """
+        """List all commit files (filenames) contained directly in the code directory."""
         if not self.is_initialized:
             raise CodeNotInitialized()
-        # List all files in the code directory (ignore directories)
-        for _, _, commit_hashes in os.walk(self._code_filepath):
-            return commit_hashes
+        if not os.path.isdir(self._code_filepath):
+            return []
+
+        entries = []
+        try:
+            for name in os.listdir(self._code_filepath):
+                full = os.path.join(self._code_filepath, name)
+                if os.path.isfile(full):
+                    entries.append(name)
+        except OSError as exc:
+            raise FileIOError(
+                __("error", "controller.code.driver.file.list_refs.io", str(exc))
+            )
+        return entries
 
     def check_unstaged_changes(self):
-        """Checks if there exists any unstaged changes for code. Returns False if it's already staged
-
-        Raises
-        ------
-        CodeNotInitialized
-            error if not initialized (must initialize first)
-
-        UnstagedChanges
-            error if not there exists unstaged changes in environment
-
-        """
+        """Raise UnstagedChanges if there are unstaged changes; otherwise return False."""
         if not self.is_initialized:
             raise CodeNotInitialized()
 
-        # Check if unstaged changes exist
         if self._has_unstaged_changes():
             raise UnstagedChanges()
 
         return False
 
     def checkout_ref(self, commit_id):
-        """Checkout to specific commit
+        """Checkout a specific commit by restoring files recorded in that commit.
 
-        Raises
-        ------
-        CodeNotInitialized
-            error if not initialized (must initialize first)
-        UnstagedChanges
-            error if not there exists unstaged changes in code
+        This removes existing tracked files (best-effort; missing files are ignored) and
+        replaces them with blobs recorded for commit_id.
         """
         if not self.is_initialized:
             raise CodeNotInitialized()
+
         if not self.exists_ref(commit_id):
             raise FileIOError(
-                __("error", "controller.code.driver.file.checkout_ref"))
-        # Check if unstaged changes exist
+                __("error", "controller.code.driver.file.checkout_ref")
+            )
+
+        # Prevent checkout when there are unstaged changes
         if self._has_unstaged_changes():
             raise UnstagedChanges()
-        # Check if commit given is same as current
+
+        # If already at that commit, nothing to do
         tracked_filepaths = self._get_tracked_files()
         if self._calculate_commit_hash(tracked_filepaths) == commit_id:
             return True
-        # Remove all tracked files from repository
-        for tracked_filepath in self._get_tracked_files():
+
+        # Remove all currently tracked files (ignore missing)
+        for tracked_filepath in tracked_filepaths:
             absolute_filepath = os.path.join(self.root, tracked_filepath)
-            os.remove(absolute_filepath)
-        # Add in files from the commit
+            try:
+                if os.path.isfile(absolute_filepath):
+                    os.remove(absolute_filepath)
+            except OSError:
+                # best-effort removal; continue
+                pass
+
+        # Read commit record and restore files from blob store
         commit_filepath = os.path.join(self._code_filepath, commit_id)
-        with open(commit_filepath, "r") as f:
+        if not os.path.isfile(commit_filepath):
+            raise FileIOError(
+                __("error", "controller.code.driver.file.checkout_ref.missing_commit", commit_filepath)
+            )
+
+        with open(commit_filepath, "r", encoding="utf-8") as f:
             for line in f:
-                tracked_filepath, filehash = line.rstrip().split(",")
-                source_absolute_filepath = os.path.join(
-                    self._code_filepath, tracked_filepath, filehash)
-                destination_absolute_filepath = os.path.join(
-                    self.root, tracked_filepath)
-                shutil.copy2(source_absolute_filepath,
-                             destination_absolute_filepath)
+                stripped = line.rstrip()
+                if not stripped:
+                    continue
+                try:
+                    tracked_filepath, filehash = stripped.split(",", 1)
+                except ValueError:
+                    # malformed line in commit file
+                    raise FileIOError(
+                        __("error", "controller.code.driver.file.checkout_ref.bad_entry", stripped)
+                    )
+
+                source_absolute_filepath = os.path.join(self._code_filepath, tracked_filepath, filehash)
+                if not os.path.isfile(source_absolute_filepath):
+                    raise FileIOError(
+                        __("error", "controller.code.driver.file.checkout_ref.missing_blob", source_absolute_filepath)
+                    )
+
+                destination_absolute_filepath = os.path.join(self.root, tracked_filepath)
+                dest_dir = os.path.dirname(destination_absolute_filepath)
+                if dest_dir:
+                    os.makedirs(dest_dir, exist_ok=True)
+
+                shutil.copy2(source_absolute_filepath, destination_absolute_filepath)
+
         return True
