@@ -1,10 +1,28 @@
 #!/bin/sh
-CHANGED_FILES=`git diff --cached --name-only | grep .py`
-if [ -z $CHANGED_FILES ]
-then
-    echo "No Python Files Changed"
-else
-    echo $CHANGED_FILES
-    yapf -i $CHANGED_FILES
-    git diff --name-only --cached | xargs -l git add
+set -eu
+
+# Find staged Python files (Added / Copied / Modified)
+STAGED_PY=$(git diff --cached --name-only --diff-filter=ACM -z -- '*.py')
+
+if [ -z "$STAGED_PY" ]; then
+  echo "No Python files staged for commit."
+  exit 0
 fi
+
+echo "Staged Python files:"
+printf '%s' "$STAGED_PY" | tr '\0' '\n'
+
+# ensure yapf is available
+if ! command -v yapf >/dev/null 2>&1; then
+  echo "yapf not found in PATH. Install yapf or skip formatting."
+  exit 1
+fi
+
+# Format (handle filenames with spaces/newlines) and re-stage
+printf '%s' "$STAGED_PY" | xargs -0 yapf -i || {
+  echo "yapf failed."
+  exit 1
+}
+
+printf '%s' "$STAGED_PY" | xargs -0 git add --
+echo "Formatted and re-staged Python files."
