@@ -2,51 +2,106 @@ import os
 import shutil
 import uuid
 import json
-from flask import Flask, url_for
-from flask import render_template, request, jsonify
-import plotly
+import shlex
+import subprocess
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 from datetime import datetime
+
+from flask import Flask, url_for, render_template, request, jsonify, abort
+
+import plotly
 
 from prodat.config import Config
 from prodat.core.entity.run import Run
 from prodat.core.controller.base import BaseController
 from prodat.core.util.misc_functions import prettify_datetime, printable_object
 
+# Attempt to import prodat_monitoring from common possible locations.
+# If unavailable, set to None and handle gracefully at runtime.
+prodat_monitoring = None
+try:
+    import prodat_monitoring  # type: ignore
+except Exception:
+    try:
+        from prodat import monitoring as prodat_monitoring  # type: ignore
+    except Exception:
+        prodat_monitoring = None
+
 app = Flask(__name__)
 base_controller = BaseController()
 
 user = {
-    "name":
-        "Shabaz Patel",
-    "username":
-        "shabazp",
-    "email":
-        "shabaz@prodat.com",
-    "gravatar_url":
-        "https://www.gravatar.com/avatar/" + str(uuid.uuid1()) +
-        "?s=220&d=identicon&r=PG"
+    "name": "Shabaz Patel",
+    "username": "shabazp",
+    "email": "shabaz@prodat.com",
+    "gravatar_url": "https://www.gravatar.com/avatar/"
+    + str(uuid.uuid1())
+    + "?s=220&d=identicon&r=PG",
 }
+
+
+def _get_model_dict() -> Dict[str, Any]:
+    """Return model dict or abort 404 if model missing."""
+    if not getattr(base_controller, "model", None):
+        abort(404, description="No model available")
+    return base_controller.model.__dict__
+
+
+def _safe_int(value: Optional[str], default: Optional[int] = None) -> Optional[int]:
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+
+def _ensure_monitoring():
+    if prodat_monitoring is None:
+        abort(500, description="prodat_monitoring is not available/importable")
+
+
+def _process_deployment_info(deployment_info: Dict[str, Any], model_version_id: str, deployment_version_id: str) -> Dict[str, Any]:
+    deployment_info = dict(deployment_info)  # copy to avoid mutating original
+    # Prettify created_at if present
+    if "created_at" in deployment_info and deployment_info["created_at"] is not None:
+        try:
+            deployment_info["created_at"] = prettify_datetime(deployment_info["created_at"])
+        except Exception:
+            # leave as-is if prettify fails
+            pass
+
+    # Filter endpoints/service_paths to only include those matching model_version_id
+    mv_key = "".join(str(model_version_id).split("_"))
+    if "endpoints" in deployment_info and isinstance(deployment_info["endpoints"], list):
+        deployment_info["endpoints"] = [ep for ep in deployment_info["endpoints"] if mv_key in ep]
+    if "service_paths" in deployment_info and isinstance(deployment_info["service_paths"], list):
+        deployment_info["service_paths"] = [p for p in deployment_info["service_paths"] if mv_key in p]
+
+    deployment_info["deployment_version_id"] = deployment_version_id
+    deployment_info["model_version_id"] = model_version_id
+    return deployment_info
+
 
 @app.route("/")
 def home():
-    models = [base_controller.model.__dict__] if base_controller.model else []
+    models = [base_controller.model.__dict__] if getattr(base_controller, "model", None) else []
     return render_template("profile.html", user=user, models=models)
 
+
 @app.route("/<model_name>")
-def model_summary(model_name):
-    model = base_controller.model.__dict__
+def model_summary(model_name: str):
+    model = _get_model_dict()
+    # static example snapshots left intact as sample data
     snapshots = [
         {
             "id": "alfwokd",
             "created_at": "Sun March 3rd, 2018",
             "labels": ["cool", "default"],
-            "config": {
-                "algorithm": "random forest"
-            },
-            "stats": {
-                "accuracy": 0.98
-            }
-        },
+            "config": {"algorithm": "random forest"},
+            "stats": {"accuracy": 0.98},
+        }
     ]
     config_keys = ["algorithm"]
     stats_keys = ["accuracy"]
@@ -56,308 +111,266 @@ def model_summary(model_name):
         model=model,
         snapshots=snapshots,
         config_keys=config_keys,
-        stats_keys=stats_keys)
+        stats_keys=stats_keys,
+    )
+
 
 @app.route("/<model_name>/experiments")
-def model_experiments(model_name):
-    model = base_controller.model.__dict__
-    if model_name == model['name']:
-        tasks = base_controller.dal.task.query({"model_id": model['id']})
+def model_experiments(model_name: str):
+    model = _get_model_dict()
+    experiments: List[Run] = []
+    if model_name == model.get("name"):
+        tasks = base_controller.dal.task.query({"model_id": model["id"]})
         experiments = [Run(task) for task in tasks]
         for experiment in experiments:
             experiment.config_printable = printable_object(experiment.config)
-            experiment.start_time_prettified = prettify_datetime(
-                experiment.start_time)
-            experiment.end_time_prettified = prettify_datetime(
-                experiment.end_time)
+            experiment.start_time_prettified = prettify_datetime(experiment.start_time)
+            experiment.end_time_prettified = prettify_datetime(experiment.end_time)
             experiment.results_printable = printable_object(experiment.results)
-    else:
-        experiments = []
-    return render_template(
-        "model_experiments.html",
-        user=user,
-        model=model,
-        experiments=experiments)
+    return render_template("model_experiments.html", user=user, model=model, experiments=experiments)
+
 
 @app.route("/<model_name>/snapshots")
-def model_snapshots(model_name):
-    model = base_controller.model.__dict__
-    if model_name == model['name']:
-        snapshots = base_controller.dal.snapshot.query({
-            "model_id": model['id']
-        })
-        snapshots = [(snapshot, snapshot.to_dictionary(stringify=True))
-                     for snapshot in snapshots]
-    else:
-        snapshots = []
-    config_keys = set(
-        item for sublist in
-        [snapshot[0].__dict__["config"].keys() for snapshot in snapshots]
-        for item in sublist)
-    stats_keys = set(
-        item for sublist in
-        [snapshot[0].__dict__["stats"].keys() for snapshot in snapshots]
-        for item in sublist)
+def model_snapshots(model_name: str):
+    model = _get_model_dict()
+    snapshots: List[Any] = []
+    if model_name == model.get("name"):
+        snaps = base_controller.dal.snapshot.query({"model_id": model["id"]})
+        snapshots = [(snapshot, snapshot.to_dictionary(stringify=True)) for snapshot in snaps]
+
+    # Safely compute config_keys and stats_keys even if snapshots empty
+    config_keys = set()
+    stats_keys = set()
+    for snapshot, _ in snapshots:
+        cfg = getattr(snapshot, "config", {}) or {}
+        st = getattr(snapshot, "stats", {}) or {}
+        config_keys.update(cfg.keys())
+        stats_keys.update(st.keys())
+
     return render_template(
         "model_snapshots.html",
         user=user,
         model=model,
         snapshots=snapshots,
         config_keys=config_keys,
-        stats_keys=stats_keys)
+        stats_keys=stats_keys,
+    )
 
-@app.route(
-    "/data/<model_name>/deployments/<deployment_version_id>/<model_version_id>"
-)
-def model_deployment_data(model_name, deployment_version_id, model_version_id):
-    # here we want to get the value of user (i.e. ?start=0)
-    start = request.args.get('start', 0)
-    count = request.args.get('count', None)
-    data_type = request.args.get('data_type', None)
-    key_name = request.args.get('key_name', None)
-    graph_type = request.args.get('graph_type', None)
+
+@app.route("/data/<model_name>/deployments/<deployment_version_id>/<model_version_id>")
+def model_deployment_data(model_name: str, deployment_version_id: str, model_version_id: str):
+    _ensure_monitoring()
+
+    start = _safe_int(request.args.get("start"), 0) or 0
+    count = _safe_int(request.args.get("count"), None)
+    data_type = request.args.get("data_type", None)
+    key_name = request.args.get("key_name", None)
+    graph_type = request.args.get("graph_type", None)
 
     if not data_type and not key_name and not graph_type:
         return "error", 400
 
-    # Get new data to add to the graphs
-    filter = {
+    query_filter = {
         "model_id": model_name,
         "deployment_version_id": deployment_version_id,
         "model_version_id": model_version_id,
-        "start": int(start)
+        "start": int(start),
     }
-    if count: filter["count"] = int(count)
-    new_data = prodat_monitoring.search_metadata(filter)
+    if count is not None:
+        query_filter["count"] = int(count)
 
-    # update the number of new results
-    num_new_results = len(new_data)
+    new_data = prodat_monitoring.search_metadata(query_filter)
 
-    # return error if data_type is not correct
+    num_new_results = len(new_data or [])
+
     if data_type not in ["input", "prediction", "feedback", "system_metrics"]:
         return "error", 400
 
-    # populate the data into the correct construct based on graph type
+    graph_data_output: Dict[str, Any] = {}
+
     if graph_type == "timeseries":
-        new_time_data = [
-            datum['updated_at'] if datum['updated_at'] else datum['created_at']
-            for datum in new_data
-        ]
+        new_time_data = []
+        for datum in new_data:
+            t = datum.get("updated_at") or datum.get("created_at")
+            if t is None:
+                continue
+            try:
+                # timestamps expected in milliseconds
+                new_time_data.append(float(t))
+            except Exception:
+                continue
+
         new_time_data_datetime = [
-            datetime.fromtimestamp(
-                float(t) / 1000).strftime('%Y-%m-%d %H:%M:%S')
-            for t in new_time_data
+            datetime.fromtimestamp(t / 1000.0).strftime("%Y-%m-%d %H:%M:%S") for t in new_time_data
         ]
-        new_feature_data = [
-            datum[data_type][key_name] if datum[data_type] else None
-            for datum in new_data
-        ]
-        graph_data_output = {
-            "new_data": {
-                "x": [new_time_data_datetime],
-                "y": [new_feature_data],
-            }
-        }
+
+        new_feature_data = [datum.get(data_type, {}).get(key_name) if datum.get(data_type) else None for datum in new_data]
+        graph_data_output = {"new_data": {"x": [new_time_data_datetime], "y": [new_feature_data]}}
 
     elif graph_type == "histogram":
-        filter = {
+        query_filter = {
             "model_id": model_name,
             "deployment_version_id": deployment_version_id,
             "model_version_id": model_version_id,
         }
-        cumulative_data = prodat_monitoring.search_metadata(filter)
+        cumulative_data = prodat_monitoring.search_metadata(query_filter) or []
         cumulative_feature_data = [
-            datum[data_type][key_name] for datum in cumulative_data
-            if datum[data_type] and key_name in datum[data_type].keys()
+            datum[data_type][key_name]
+            for datum in cumulative_data
+            if datum.get(data_type) and key_name in datum.get(data_type, {})
         ]
+
         import numpy as np
+
+        # np.histogram works with empty arrays: it will return empty counts and bins
         counts, binedges = np.histogram(cumulative_feature_data)
-        binsize = binedges[1] - binedges[0]
-        bin_names = [
-            str(round(binedge, 2)) + " : " + str(round(binedge + binsize, 2))
-            for binedge in binedges
-        ]
-        graph_data_output = {
-            "cumulative_data": {
-                "x": [bin_names],
-                "y": [counts]
-            }
-        }
-    elif graph_type == "gauge":
-        new_feature_data = [
-            datum[data_type][key_name] if datum[data_type] else None
-            for datum in new_data
-        ]
-        if len(new_feature_data) > 0:
-            average = sum(new_feature_data) / float(len(new_feature_data))
+        if len(binedges) > 1:
+            binsize = binedges[1] - binedges[0]
         else:
-            average = None
+            binsize = 0
+        bin_names = [
+            f"{round(float(binedge), 2)} : {round(float(binedge) + binsize, 2)}" for binedge in binedges
+        ]
+        graph_data_output = {"cumulative_data": {"x": [bin_names], "y": [counts.tolist()]}}
+
+    elif graph_type == "gauge":
+        new_feature_data = [datum.get(data_type, {}).get(key_name) if datum.get(data_type) else None for datum in new_data]
+        numeric_values = [v for v in new_feature_data if isinstance(v, (int, float))]
+        average = float(sum(numeric_values)) / len(numeric_values) if numeric_values else None
         graph_data_output = {"average": average}
+
     else:
         return "error", 400
 
-    # Convert the figures to JSON
-    # PlotlyJSONEncoder appropriately converts pandas, datetime, etc
-    # objects to their JSON equivalents
-    graph_data_outputJSON = json.dumps(
-        graph_data_output, cls=plotly.utils.PlotlyJSONEncoder)
+    graph_data_outputJSON = json.dumps(graph_data_output, cls=plotly.utils.PlotlyJSONEncoder)
 
-    return jsonify(
-        graph_data_output_json_str=graph_data_outputJSON,
-        num_new_results=num_new_results)
+    return jsonify(graph_data_output_json_str=graph_data_outputJSON, num_new_results=num_new_results)
 
-@app.route(
-    "/<model_name>/deployments/<deployment_version_id>/<model_version_id>")
-def model_deployment_detail(model_name, deployment_version_id,
-                            model_version_id):
-    model = base_controller.model.__dict__
 
-    filter = {
+@app.route("/<model_name>/deployments/<deployment_version_id>/<model_version_id>")
+def model_deployment_detail(model_name: str, deployment_version_id: str, model_version_id: str):
+    _ensure_monitoring()
+    model = _get_model_dict()
+
+    query_filter = {
         "model_id": model_name,
         "model_version_id": model_version_id,
-        "deployment_version_id": deployment_version_id
+        "deployment_version_id": deployment_version_id,
     }
-    input_keys, prediction_keys, feedback_keys = [], [], []
-    data = prodat_monitoring.search_metadata(filter)
+
+    input_keys: List[str] = []
+    prediction_keys: List[str] = []
+    feedback_keys: List[str] = []
+
+    data = prodat_monitoring.search_metadata(query_filter) or []
 
     if data:
         max_index = 0
         for ind, datum in enumerate(data):
-            if datum['feedback'] is not None:
+            if datum.get("feedback") is not None:
                 max_index = ind
         datum = data[max_index]
-        input_keys = list(datum['input'].keys())
-        prediction_keys = list(datum['prediction'].keys())
-        feedback_keys = list(
-            datum['feedback'].keys()) if datum['feedback'] is not None else []
+        input_keys = list(datum.get("input", {}).keys())
+        prediction_keys = list(datum.get("prediction", {}).keys())
+        feedback_keys = list(datum.get("feedback", {}).keys()) if datum.get("feedback") is not None else []
 
     # Determine the graph directory path and create if not present
-    graph_dirpath = os.path.join(base_controller.home,
-                                 Config().prodat_directory_name, "deployments",
-                                 deployment_version_id, model_version_id,
-                                 "graphs")
-    if not os.path.exists(graph_dirpath): os.makedirs(graph_dirpath)
+    graph_dirpath = Path(base_controller.home) / Config().prodat_directory_name / "deployments" / deployment_version_id / model_version_id / "graphs"
+    graph_dirpath.mkdir(parents=True, exist_ok=True)
 
     # Include deployment info
-    deployment_info = prodat_monitoring.get_deployment_info(
-        deployment_version_id=deployment_version_id)
-    # Prettify dates
-    deployment_info['created_at'] = prettify_datetime(
-        deployment_info['created_at'])
-    # TODO: replace with proper handling
-    deployment_info['endpoints'] = [
-        endpoint for endpoint in deployment_info['endpoints']
-        if "".join(model_version_id.split("_")) in endpoint
-    ]
-    deployment_info['service_paths'] = [
-        path for path in deployment_info['service_paths']
-        if "".join(model_version_id.split("_")) in path
-    ]
-    # TODO: END
-    deployment_info['deployment_version_id'] = deployment_version_id
-    deployment_info['model_version_id'] = model_version_id
+    deployment_info = prodat_monitoring.get_deployment_info(deployment_version_id=deployment_version_id)
+    deployment_info = _process_deployment_info(deployment_info, model_version_id, deployment_version_id)
 
     return render_template(
         "model_deployment_detail.html",
         user=user,
         model=model,
         deployment=deployment_info,
-        graph_dirpath=graph_dirpath,
+        graph_dirpath=str(graph_dirpath),
         input_keys=input_keys,
         prediction_keys=prediction_keys,
         feedback_keys=feedback_keys,
     )
 
+
 @app.route("/<model_name>/deployments")
-def model_deployments(model_name):
-    model = base_controller.model.__dict__
+def model_deployments(model_name: str):
+    _ensure_monitoring()
+    model = _get_model_dict()
 
-    # get all data and extract unique model_version_id and deployment_version_id
-    filter = {"model_id": model_name}
-    all_data = prodat_monitoring.search_metadata(filter)
-    model_version_ids = set(data['model_version_id'] for data in all_data)
-    deployment_version_ids = set(
-        data['deployment_version_id'] for data in all_data)
+    all_data = prodat_monitoring.search_metadata({"model_id": model_name}) or []
+    model_version_ids = set(item.get("model_version_id") for item in all_data if item.get("model_version_id") is not None)
+    deployment_version_ids = set(item.get("deployment_version_id") for item in all_data if item.get("deployment_version_id") is not None)
 
-    # Get deployment information for each of the deployments
-    deployments = []
+    deployments: List[Dict[str, Any]] = []
     for deployment_version_id in deployment_version_ids:
         for model_version_id in model_version_ids:
             try:
-                deployment_info = prodat_monitoring.get_deployment_info(
-                    deployment_version_id=deployment_version_id)
-            except:
-                break
-            # Prettify dates
-            deployment_info['created_at'] = prettify_datetime(
-                deployment_info['created_at'])
-            # TODO: replace with proper handling
-            deployment_info['endpoints'] = [
-                endpoint for endpoint in deployment_info['endpoints']
-                if "".join(model_version_id.split("_")) in endpoint
-            ]
-            deployment_info['service_paths'] = [
-                path for path in deployment_info['service_paths']
-                if "".join(model_version_id.split("_")) in path
-            ]
-            # TODO: END
-            deployment_info['deployment_version_id'] = deployment_version_id
-            deployment_info['model_version_id'] = model_version_id
+                deployment_info = prodat_monitoring.get_deployment_info(deployment_version_id=deployment_version_id)
+            except Exception:
+                # if fetching fails for this deployment, skip it
+                continue
+            deployment_info = _process_deployment_info(deployment_info, model_version_id, deployment_version_id)
             deployments.append(deployment_info)
 
-    return render_template(
-        "model_deployments.html",
-        user=user,
-        model=model,
-        deployments=deployments,
-    )
+    return render_template("model_deployments.html", user=user, model=model, deployments=deployments)
 
-@app.route(
-    "/<model_name>/deployments/<deployment_version_id>/<model_version_id>/custom/create"
-)
-def model_deployment_script_create(model_name, deployment_version_id,
-                                   model_version_id):
-    content = request.args.get('content')
-    filepath = request.args.get('filepath')
-    dirpath, _ = os.path.split(filepath)
-    # ensure the containing directory exists
-    if not os.path.exists(dirpath): os.makedirs(dirpath)
-    with open(filepath, "w") as f:
+
+@app.route("/<model_name>/deployments/<deployment_version_id>/<model_version_id>/custom/create")
+def model_deployment_script_create(model_name: str, deployment_version_id: str, model_version_id: str):
+    content = request.args.get("content", "")
+    filepath = request.args.get("filepath")
+    if not filepath:
+        return "error", 400
+    dirpath = os.path.dirname(filepath)
+    os.makedirs(dirpath, exist_ok=True)
+    with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)
     return "complete", 200
 
-@app.route(
-    "/<model_name>/deployments/<deployment_version_id>/<model_version_id>/custom/run"
-)
-def model_deployment_script_run(model_name, deployment_version_id,
-                                model_version_id):
-    filepath = request.args.get('filepath')
-    # ensure that the filepath is a valid path
+
+@app.route("/<model_name>/deployments/<deployment_version_id>/<model_version_id>/custom/run")
+def model_deployment_script_run(model_name: str, deployment_version_id: str, model_version_id: str):
+    filepath = request.args.get("filepath")
+    if not filepath:
+        return "error", 400
     if not os.path.isfile(filepath):
         return "error", 400
-    os.system("python " + filepath)
+    # Run the file in a subprocess (safer than os.system)
+    try:
+        cmd = ["python", filepath]
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError:
+        return "error", 500
     return "complete", 200
+
 
 @app.route("/hash/generate")
 def generate_hash():
-    string_to_hash = str(request.args.get('string_to_hash'))
-    hash = str(uuid.uuid3(uuid.NAMESPACE_DNS, string_to_hash))
-    return jsonify({"result": hash})
+    string_to_hash = str(request.args.get("string_to_hash", ""))
+    result_hash = str(uuid.uuid3(uuid.NAMESPACE_DNS, string_to_hash))
+    return jsonify({"result": result_hash})
+
 
 @app.route("/alias/create")
 def create_alias():
-    filepath = request.args.get('filepath')
-    graph_id = request.args.get('graph_id')
+    filepath = request.args.get("filepath")
+    graph_id = request.args.get("graph_id")
+    if not filepath or not graph_id:
+        return jsonify({"error": "missing filepath or graph_id"}), 400
 
-    available_filepath = os.path.join(app.root_path, "static", "img",
-                                      graph_id + ".jpg")
-    print(filepath)
-    if os.path.exists(available_filepath):
-        os.remove(available_filepath)
-    shutil.copy(src=filepath, dst=available_filepath)
-    print(available_filepath)
-    webpath = url_for("static", filename="./img/" + graph_id + ".jpg")
+    available_filepath = Path(app.root_path) / "static" / "img" / f"{graph_id}.jpg"
+    try:
+        if available_filepath.exists():
+            available_filepath.unlink()
+        shutil.copy(src=filepath, dst=str(available_filepath))
+    except Exception as e:
+        return jsonify({"error": f"failed to copy file: {str(e)}"}), 500
+
+    webpath = url_for("static", filename=f"img/{graph_id}.jpg")
     return jsonify({"webpath": webpath})
+
 
 if __name__ == "__main__":
     app.run(debug=True)
