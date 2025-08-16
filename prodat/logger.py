@@ -1,29 +1,22 @@
-
 import os
-try:
-    str
-except NameError:
-    str = str
-
 from prodat.core.util.json_store import JSONStore
 from prodat.core.util.exceptions import InvalidArgumentType
 
-class Logger():
-    """Logger is a class to enable user to store properties
+
+class Logger:
+    """Logger is a class to store properties like configs and results.
 
     Attributes
     ----------
-    config : dict
-        dictionary containing input or output configs from the run
-    results : dict
-        dictionary containing output results from the run
+    task_dir : str
+        Path to the task directory
 
     Methods
     -------
     log_config(config)
-        Saving the configuration dictionary for the run
-    log_results(results)
-        Saving the result dictionary for the run
+        Save the configuration dictionary for the run
+    log_result(results)
+        Save the results dictionary for the run
 
     Raises
     ------
@@ -31,34 +24,26 @@ class Logger():
     """
 
     def __init__(self, task_dir="/task"):
-
         self.task_dir = task_dir
 
-    @classmethod
-    def __save_dictionary(self, dictionary, path):
+    @staticmethod
+    def _save_dictionary(dictionary, path):
         json_obj = JSONStore(path)
         data = json_obj.to_dict()
         data.update(dictionary)
         json_obj.to_file(data)
         return data
 
-    def log_config(self, config):
+    def _get_file_path(self, filename):
+        base_dir = self.task_dir if os.path.isdir(self.task_dir) else os.getcwd()
+        return os.path.join(base_dir, filename)
 
+    def log_config(self, config):
         if not isinstance(config, dict):
             raise InvalidArgumentType()
-
-        config_path = os.path.join(self.task_dir, "config.json") \
-            if os.path.isdir(self.task_dir) else\
-            os.path.join(os.getcwd(), "config.json")
-
-        return self.__save_dictionary(config, config_path)
+        return self._save_dictionary(config, self._get_file_path("config.json"))
 
     def log_result(self, results):
         if not isinstance(results, dict):
             raise InvalidArgumentType()
-
-        results_path = os.path.join(self.task_dir, "stats.json") \
-            if os.path.isdir(self.task_dir) else\
-            os.path.join(os.getcwd(), "stats.json")
-
-        return self.__save_dictionary(results, results_path)
+        return self._save_dictionary(results, self._get_file_path("stats.json"))
